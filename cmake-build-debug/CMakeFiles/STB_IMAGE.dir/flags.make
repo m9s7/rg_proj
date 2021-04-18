@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/ubuntu/Desktop/project_base/cmake-build-debug/configuration -I/home/ubuntu/Desktop/project_base/include
+CXX_INCLUDES = -I/home/ubuntu/Desktop/rg_proj/cmake-build-debug/configuration -I/home/ubuntu/Desktop/rg_proj/include
 
 CXX_FLAGS = -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter -O3 -g -std=gnu++14
 

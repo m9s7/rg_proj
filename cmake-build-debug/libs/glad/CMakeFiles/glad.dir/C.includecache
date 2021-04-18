@@ -18,7 +18,7 @@ stdint.h
 KHR/khrplatform.h
 -
 
-/home/ubuntu/Desktop/project_base/libs/glad/src/glad.c
+/home/ubuntu/Desktop/rg_proj/libs/glad/src/glad.c
 stdio.h
 -
 stdlib.h
