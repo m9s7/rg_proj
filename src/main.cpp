@@ -76,7 +76,7 @@ int main()
 
     // load models
     // -----------
-    Model ourModel(FileSystem::getPath("resources/objects/cyborg/cyborg.obj"));
+    Model ourModel(FileSystem::getPath("resources/objects/model/capsule.obj"));
 
     
     // draw in wireframe
