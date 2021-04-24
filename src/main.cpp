@@ -18,10 +18,10 @@ void processInput(GLFWwindow *window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-// camera
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
-bool firstMouse = true;
+//// camera
+//float lastX = SCR_WIDTH / 2.0f;
+//float lastY = SCR_HEIGHT / 2.0f;
+//bool firstMouse = true;
 
 // timing
 float deltaTime = 0.0f;
@@ -42,7 +42,7 @@ int main()
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "RG projekat", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -52,8 +52,8 @@ int main()
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    // tell GLFW to capture our mouse
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+//    // tell GLFW to capture our mouse
+//    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -78,7 +78,62 @@ int main()
     // -----------
     Model ourModel(FileSystem::getPath("resources/objects/model/capsule.obj"));
 
-    
+    Shader groundShader("resources/shaders/1.model_loading.vs", "resources/shaders/1.model_loading.fs");
+
+    float ground_vertices[] = {
+            // above
+            0.5f, 0.5f, 0.5f,       //A1
+            0.5f, 0.5f, -0.5f,      //B2
+            -0.5f, 0.5f, 0.5f,      //C3
+            -0.5f, 0.5f, -0.5f,     //D4
+            // below
+            0.5f, -0.5f, 0.5f,      //E5
+            0.5f, -0.5f, -0.5f,     //F6
+            -0.5f, -0.5f, 0.5f,     //G7
+            -0.5f, -0.5f, -0.5f,    //H8
+    };
+
+    unsigned ground_indices[] = {
+        1, 2, 3,
+        2, 3, 4,
+
+        5, 6, 7,
+        6, 7, 8,
+
+        1, 2, 5,
+        2, 5, 6,
+
+        2, 4, 6,
+        4, 6, 8,
+
+        3, 4, 7,
+        4, 7, 8,
+
+        1, 3, 5,
+        3, 5, 7
+    };
+
+    unsigned int VBO, VAO, EBO;
+
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(ground_vertices), ground_vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ground_indices), ground_indices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -100,6 +155,8 @@ int main()
         // ------
         glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
 
         // don't forget to enable shader before setting uniforms
         ourShader.use();
