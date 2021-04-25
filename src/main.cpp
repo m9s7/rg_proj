@@ -13,6 +13,11 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
+glm::mat4 static_camera();
+glm::mat4 repositionAndDrawStand(glm::mat4 model, Shader shader, int indices_count);
+void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders);
+glm::mat4 setAndDrawInitialStand(unsigned int VAO, Shader shader, int indices_count);
+void drawStands(unsigned int VAO, Shader shader, int indices_count);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -80,6 +85,8 @@ int main()
 
     Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
 
+    vector<Shader*> shaders = {&groundShader, &ourShader};
+
     /* DRAWING OBJECT WITH EBO */
     float ground_vertices[] = {
             // above
@@ -93,7 +100,6 @@ int main()
             -0.5f, -0.1f, 0.5f,     //G6
             -0.5f, -0.1f, -0.5f,    //H7
     };
-
     unsigned ground_indices[] = {
         0, 1, 2,
         1, 2, 3,
@@ -113,7 +119,7 @@ int main()
         0, 2, 4,
         2, 4, 6
     };
-
+    int indices_count = sizeof(ground_indices)/sizeof(ground_indices[0]);
     unsigned int VBO, VAO, EBO;
 
     glGenVertexArrays(1, &VAO);
@@ -142,57 +148,30 @@ int main()
     // -----------
     while (!glfwWindowShouldClose(window))
     {
-        // per-frame time logic
-        // --------------------
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // input
-        // -----
         processInput(window);
 
-        // render
-        // ------
         glClearColor(0.05f, 0.05f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-//        // view/projection transformations
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        setViewAndProjectionMatrixForAllShaders(shaders);
 
-        // static camera
-        glm::vec3 Position = glm::vec3(0.0f, 2.0f, 10.0f);
-        glm::vec3 WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-        glm::vec3 Front = glm::vec3(0.0f, 0.0f, -1.0f);
-        glm::vec3 Right = glm::normalize(glm::cross(Front, WorldUp));
-        glm::vec3 Up = glm::normalize(glm::cross(Right, Front));
-        glm::mat4 view = glm::lookAt(Position, Position + Front, Up);
+//        ourShader.use();
+//        ourShader.setMat4("projection", projection);
+//        ourShader.setMat4("view", view);
+//
+////        // render the loaded model
+//        glm::mat4 model = glm::mat4(1.0f);
+//        model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
+//        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+//        ourShader.setMat4("model", model);
+//
+//        ourModel.Draw(ourShader);
 
-        ourShader.use();
-        ourShader.setMat4("projection", projection);
-        ourShader.setMat4("view", view);
-
-//        // render the loaded model
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-        ourShader.setMat4("model", model);
-
-        ourModel.Draw(ourShader);
-
-
-        groundShader.use();
-        glm::mat4 groundModel = glm::mat4(1.0f);
-        groundModel = glm::translate(groundModel, glm::vec3(0.0f, -0.5f, 0.0f));
-        groundModel = glm::rotate(groundModel, glm::radians(10.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        groundModel = glm::scale(groundModel, glm::vec3(2.0f, 1.0f, 2.0f));
-        groundShader.setMat4("projection", projection);
-        groundShader.setMat4("view", view);
-        groundShader.setMat4("model", groundModel);
-
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, sizeof(ground_indices)/sizeof(ground_indices[0]), GL_UNSIGNED_INT, 0);
-
+        drawStands(VAO, groundShader, indices_count);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -204,6 +183,48 @@ int main()
     // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
+}
+
+void drawStands(unsigned int VAO, Shader shader, int indices_count){
+    glm::mat4 model = setAndDrawInitialStand(VAO, shader, indices_count);
+    model = repositionAndDrawStand(model, shader, indices_count);
+    model = repositionAndDrawStand(model, shader, indices_count);
+    model = repositionAndDrawStand(model, shader, indices_count);
+}
+
+void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders){
+    glm::mat4 view = static_camera();
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f),
+                                            (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    for(Shader* shader : shaders){
+        shader->use();
+        shader->setMat4("projection", projection);
+        shader->setMat4("view", view);
+    }
+}
+
+glm::mat4 setAndDrawInitialStand(unsigned int VAO, Shader shader, int indices_count){
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(-3.9f, -0.5f, 0.0f));
+    model = glm::rotate(model, glm::radians(10.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(2.0f, 1.0f, 2.0f));
+
+    shader.use();
+    shader.setMat4("model", model);
+
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT, 0);
+
+    return model;
+}
+
+glm::mat4 repositionAndDrawStand(glm::mat4 model, Shader shader, int indices_count){
+    model = glm::translate(model, glm::vec3(1.3f, 0.0f, 0.0f));
+    shader.use();
+    shader.setMat4("model", model);
+    glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT, 0);
+    return model;
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
@@ -226,3 +247,11 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
 
+glm::mat4 static_camera(){
+    glm::vec3 Position = glm::vec3(0.0f, 2.0f, 10.0f);
+    glm::vec3 WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 Front = glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 Right = glm::normalize(glm::cross(Front, WorldUp));
+    glm::vec3 Up = glm::normalize(glm::cross(Right, Front));
+    return glm::lookAt(Position, Position + Front, Up);
+}
