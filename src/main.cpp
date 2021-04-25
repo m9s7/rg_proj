@@ -80,6 +80,7 @@ int main()
 
     Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
 
+    /* DRAWING OBJECT WITH EBO */
     float ground_vertices[] = {
             // above
             0.5f, 0.1f, 0.5f,       //A0
@@ -92,8 +93,6 @@ int main()
             -0.5f, -0.1f, 0.5f,     //G6
             -0.5f, -0.1f, -0.5f,    //H7
     };
-
-    int number_of_obj_vertecies = 36;
 
     unsigned ground_indices[] = {
         0, 1, 2,
@@ -192,7 +191,7 @@ int main()
         groundShader.setMat4("model", groundModel);
 
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, number_of_obj_vertecies, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, sizeof(ground_indices)/sizeof(ground_indices[0]), GL_UNSIGNED_INT, 0);
 
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
