@@ -78,39 +78,41 @@ int main()
     // -----------
     Model ourModel(FileSystem::getPath("resources/objects/model/capsule.obj"));
 
-    Shader groundShader("resources/shaders/1.model_loading.vs", "resources/shaders/1.model_loading.fs");
+    Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
 
     float ground_vertices[] = {
             // above
-            0.5f, 0.5f, 0.5f,       //A1
-            0.5f, 0.5f, -0.5f,      //B2
-            -0.5f, 0.5f, 0.5f,      //C3
-            -0.5f, 0.5f, -0.5f,     //D4
+            0.5f, 0.1f, 0.5f,       //A0
+            0.5f, 0.1f, -0.5f,      //B1
+            -0.5f, 0.1f, 0.5f,      //C2
+            -0.5f, 0.1f, -0.5f,     //D3
             // below
-            0.5f, -0.5f, 0.5f,      //E5
-            0.5f, -0.5f, -0.5f,     //F6
-            -0.5f, -0.5f, 0.5f,     //G7
-            -0.5f, -0.5f, -0.5f,    //H8
+            0.5f, -0.1f, 0.5f,      //E4
+            0.5f, -0.1f, -0.5f,     //F5
+            -0.5f, -0.1f, 0.5f,     //G6
+            -0.5f, -0.1f, -0.5f,    //H7
     };
 
+    int number_of_obj_vertecies = 36;
+
     unsigned ground_indices[] = {
+        0, 1, 2,
         1, 2, 3,
-        2, 3, 4,
 
+        4, 5, 6,
         5, 6, 7,
-        6, 7, 8,
 
-        1, 2, 5,
-        2, 5, 6,
-
-        2, 4, 6,
-        4, 6, 8,
-
-        3, 4, 7,
-        4, 7, 8,
+        0, 1, 4,
+        1, 4, 5,
 
         1, 3, 5,
-        3, 5, 7
+        3, 5, 7,
+
+        2, 3, 6,
+        3, 6, 7,
+
+        0, 2, 4,
+        2, 4, 6
     };
 
     unsigned int VBO, VAO, EBO;
@@ -135,7 +137,7 @@ int main()
 
 
     // draw in wireframe
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // render loop
     // -----------
@@ -153,15 +155,10 @@ int main()
 
         // render
         // ------
-        glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+        glClearColor(0.05f, 0.05f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-
-        // don't forget to enable shader before setting uniforms
-        ourShader.use();
-
-        // view/projection transformations
+//        // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
         // static camera
@@ -172,15 +169,30 @@ int main()
         glm::vec3 Up = glm::normalize(glm::cross(Right, Front));
         glm::mat4 view = glm::lookAt(Position, Position + Front, Up);
 
+        ourShader.use();
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
 
-        // render the loaded model
+//        // render the loaded model
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+        model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
         ourShader.setMat4("model", model);
+
         ourModel.Draw(ourShader);
+
+
+        groundShader.use();
+        glm::mat4 groundModel = glm::mat4(1.0f);
+        groundModel = glm::translate(groundModel, glm::vec3(0.0f, -0.5f, 0.0f));
+        groundModel = glm::rotate(groundModel, glm::radians(10.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        groundModel = glm::scale(groundModel, glm::vec3(2.0f, 1.0f, 2.0f));
+        groundShader.setMat4("projection", projection);
+        groundShader.setMat4("view", view);
+        groundShader.setMat4("model", groundModel);
+
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, number_of_obj_vertecies, GL_UNSIGNED_INT, 0);
 
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
