@@ -10,6 +10,7 @@
 #include <learnopengl/model.h>
 
 #include <iostream>
+#include <model_manager.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -18,11 +19,6 @@ void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indices_count);
-
-glm::mat4 initKakashiModel();
-glm::mat4 initSasukeModel();
-glm::mat4 initNarutoModel();
-glm::mat4 initSakuraModel();
 
 unsigned selectedStand = 0;
 
@@ -83,23 +79,6 @@ int main()
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
 
-    // build and compile shaders
-    // -------------------------
-    Shader modelShader("resources/shaders/model_shader.vs", "resources/shaders/model_shader.fs");
-
-    // load models
-    // -----------
-    Model kakashi(FileSystem::getPath("resources/objects/kakashi/D0401273.obj"));
-    Model sasuke(FileSystem::getPath("resources/objects/sasuke/sasuke.obj"));
-    Model naruto(FileSystem::getPath("resources/objects/naruto/D0401253.obj"));
-    Model sakura(FileSystem::getPath("resources/objects/sakura/sakura.obj"));
-
-    Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
-    Shader selectedStandShader("resources/shaders/selected_shader.vs", "resources/shaders/selected_stand.fs");
-
-    vector<Shader*> shaders = {&groundShader, &modelShader, &selectedStandShader};
-
-
     /* DRAWING OBJECT WITH EBO */
     float ground_vertices[] = {
             // above
@@ -154,6 +133,9 @@ int main()
     glBindVertexArray(0);
 
     /* Stand set up */
+    Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
+    Shader selectedStandShader("resources/shaders/selected_shader.vs", "resources/shaders/selected_stand.fs");
+
     // Stand model 0 - initial - kakashi
     glm::mat4 standModel_0 = glm::mat4(1.0f);
     standModel_0 = glm::translate(standModel_0, glm::vec3(-3.9f, -0.5f, 0.0f));
@@ -167,6 +149,15 @@ int main()
     glm::mat4 standModel_3 = glm::translate(standModel_2, glm::vec3(1.3f, 0.0f, 0.0f));
 
     vector<glm::mat4> stand_models = {standModel_0, standModel_1, standModel_2, standModel_3};
+
+    /*Model set up*/
+    Shader modelShader("resources/shaders/model_shader.vs", "resources/shaders/model_shader.fs");
+
+    ModelManager mm = ModelManager();
+
+    /* Shaders */
+    vector<Shader*> shaders = {&groundShader, &modelShader, &selectedStandShader};
+
 
     // draw in wireframe
 //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -187,36 +178,22 @@ int main()
 
         setViewAndProjectionMatrixForAllShaders(shaders);
 
-        /* render the loaded models */
-        modelShader.use();
+        /* render the loaded models */ //- can all be moved to 1 function
 
-            // kakashi
-        glm::mat4 kakashiModel = initKakashiModel();
-        modelShader.setMat4("model", kakashiModel);
-        kakashi.Draw(modelShader);
+        mm.drawCharacter(KAKASHI, modelShader);
+        mm.drawCharacter(SASUKE, modelShader);
+        mm.drawCharacter(NARUTO, modelShader);
+        mm.drawCharacter(SAKURA, modelShader);
 
-            // sasuke
-        glm::mat4 sasukeModel = initSasukeModel();
-        modelShader.setMat4("model", sasukeModel);
-        sasuke.Draw(modelShader);
-
-            // naruto
-        glm::mat4 narutoModel = initNarutoModel();
-        modelShader.setMat4("model", narutoModel);
-        naruto.Draw(modelShader);
-
-            // sakura
-        glm::mat4 sakuraModel = initSakuraModel();
-        modelShader.setMat4("model", sakuraModel);
-        sakura.Draw(modelShader);
 
         /* Draw stands */
-        for(unsigned i = 0; i < stand_models.size(); i++){
-            if(i == selectedStand)
+        for(unsigned i = 0; i < stand_models.size(); i++) {
+            if (i == selectedStand){
                 drawStand(VAO, stand_models[i], selectedStandShader, indices_count);
-            else
-                drawStand(VAO, stand_models[i], groundShader, indices_count);
-        }
+//                drawCharacter(sakuraModel, sakura, modelShader);
+            }else
+                    drawStand(VAO, stand_models[i], groundShader, indices_count);
+            }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -230,33 +207,6 @@ int main()
     return 0;
 }
 
-glm::mat4 initKakashiModel(){
-    glm::mat4 kakashiModel = glm::mat4(1.0f);
-    kakashiModel = glm::translate(kakashiModel, glm::vec3(-3.9f, -0.4f, 0.0f));
-    kakashiModel = glm::scale(kakashiModel, glm::vec3(0.1f));
-    return kakashiModel;
-}
-glm::mat4 initSasukeModel(){
-    glm::mat4 sasukeModel = glm::mat4(1.0f);
-    sasukeModel = glm::translate(sasukeModel, glm::vec3(-1.3f, -0.4f, 0.0f));
-    sasukeModel = glm::scale(sasukeModel, glm::vec3(0.105f));
-    return sasukeModel;
-}
-glm::mat4 initNarutoModel(){
-    glm::mat4 narutoModel = glm::mat4(1.0f);
-    narutoModel = glm::translate(narutoModel, glm::vec3(1.3f, -0.4f, 0.0f));
-    narutoModel = glm::scale(narutoModel, glm::vec3(0.1f));
-    return narutoModel;
-}
-glm::mat4 initSakuraModel(){
-    glm::mat4 sakuraModel = glm::mat4(1.0f);
-    sakuraModel = glm::translate(sakuraModel, glm::vec3(3.6f, 0.4f, 7.0f));
-    sakuraModel = glm::rotate(sakuraModel, glm::radians(-80.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    sakuraModel = glm::scale(sakuraModel, glm::vec3(2.0f));
-    return sakuraModel;
-}
-
-
 void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders){
     glm::mat4 view = static_camera();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f),
@@ -267,7 +217,6 @@ void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders){
         shader->setMat4("view", view);
     }
 }
-
 
 glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indices_count){
     shader.use();

@@ -100,6 +100,10 @@ iostream
 common.h
 -
 
+../include/model_manager.h
+learnopengl/model.h
+-
+
 ../include/stb_image.h
 stb_image.h
 ../include/stb_image.h
@@ -158,6 +162,8 @@ learnopengl/shader_m.h
 learnopengl/model.h
 -
 iostream
+-
+model_manager.h
 -
 
 configuration/root_directory.h
