@@ -18,11 +18,14 @@ glm::mat4 repositionAndDrawStand(glm::mat4 model, Shader shader, int indices_cou
 void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders);
 glm::mat4 setAndDrawInitialStand(unsigned int VAO, Shader shader, int indices_count);
 void drawStands(unsigned int VAO, Shader shader, int indices_count);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 glm::mat4 initKakashiModel();
 glm::mat4 initSasukeModel();
 glm::mat4 initNarutoModel();
 glm::mat4 initSakuraModel();
+
+int selectedStand = 0;
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -61,8 +64,9 @@ int main()
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetKeyCallback(window, key_callback);
 
-//    // tell GLFW to capture our mouse
+//    // tell GLFW to capture our mouse - ovo ti skloni kursor sa ekrana i to retardirano
 //    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // glad: load all OpenGL function pointers
@@ -82,7 +86,7 @@ int main()
 
     // build and compile shaders
     // -------------------------
-    Shader modelShader("resources/shaders/1.model_loading.vs", "resources/shaders/1.model_loading.fs");
+    Shader modelShader("resources/shaders/model_shader.vs", "resources/shaders/model_shader.fs");
 
     // load models
     // -----------
@@ -229,12 +233,6 @@ glm::mat4 initSakuraModel(){
     return sakuraModel;
 }
 
-void drawStands(unsigned int VAO, Shader shader, int indices_count){
-    glm::mat4 model = setAndDrawInitialStand(VAO, shader, indices_count);
-    model = repositionAndDrawStand(model, shader, indices_count);
-    model = repositionAndDrawStand(model, shader, indices_count);
-    repositionAndDrawStand(model, shader, indices_count);
-}
 
 void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders){
     glm::mat4 view = static_camera();
@@ -245,6 +243,13 @@ void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders){
         shader->setMat4("projection", projection);
         shader->setMat4("view", view);
     }
+}
+
+void drawStands(unsigned int VAO, Shader shader, int indices_count){
+    glm::mat4 model = setAndDrawInitialStand(VAO, shader, indices_count);
+    model = repositionAndDrawStand(model, shader, indices_count);
+    model = repositionAndDrawStand(model, shader, indices_count);
+    repositionAndDrawStand(model, shader, indices_count);
 }
 
 glm::mat4 setAndDrawInitialStand(unsigned int VAO, Shader shader, int indices_count){
@@ -275,6 +280,17 @@ void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
+    if(action == GLFW_RELEASE || action == GLFW_REPEAT)
+        return;
+    if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS && selectedStand < 3)
+        selectedStand++;
+    if(key == GLFW_KEY_LEFT && action == GLFW_PRESS && selectedStand > 0)
+        selectedStand--;
+
+    std::cout << selectedStand << std::endl;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
