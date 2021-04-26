@@ -19,6 +19,11 @@ void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders);
 glm::mat4 setAndDrawInitialStand(unsigned int VAO, Shader shader, int indices_count);
 void drawStands(unsigned int VAO, Shader shader, int indices_count);
 
+glm::mat4 initKakashiModel();
+glm::mat4 initSasukeModel();
+glm::mat4 initNarutoModel();
+glm::mat4 initSakuraModel();
+
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -69,7 +74,7 @@ int main()
     }
 
     // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
-    stbi_set_flip_vertically_on_load(true);
+//    stbi_set_flip_vertically_on_load(true);
 
     // configure global opengl state
     // -----------------------------
@@ -77,15 +82,18 @@ int main()
 
     // build and compile shaders
     // -------------------------
-    Shader ourShader("resources/shaders/1.model_loading.vs", "resources/shaders/1.model_loading.fs");
+    Shader modelShader("resources/shaders/1.model_loading.vs", "resources/shaders/1.model_loading.fs");
 
     // load models
     // -----------
-    Model ourModel(FileSystem::getPath("resources/objects/model/capsule.obj"));
+    Model kakashi(FileSystem::getPath("resources/objects/kakashi/D0401273.obj"));
+    Model sasuke(FileSystem::getPath("resources/objects/sasuke/sasuke.obj"));
+    Model naruto(FileSystem::getPath("resources/objects/naruto/D0401253.obj"));
+    Model sakura(FileSystem::getPath("resources/objects/sakura/sakura.obj"));
 
     Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
 
-    vector<Shader*> shaders = {&groundShader, &ourShader};
+    vector<Shader*> shaders = {&groundShader, &modelShader};
 
     /* DRAWING OBJECT WITH EBO */
     float ground_vertices[] = {
@@ -159,17 +167,27 @@ int main()
 
         setViewAndProjectionMatrixForAllShaders(shaders);
 
-//        ourShader.use();
-//        ourShader.setMat4("projection", projection);
-//        ourShader.setMat4("view", view);
-//
-////        // render the loaded model
-//        glm::mat4 model = glm::mat4(1.0f);
-//        model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
-//        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-//        ourShader.setMat4("model", model);
-//
-//        ourModel.Draw(ourShader);
+        // render the loaded models
+
+        // kakashi
+        glm::mat4 kakashiModel = initKakashiModel();
+        modelShader.setMat4("model", kakashiModel);
+        kakashi.Draw(modelShader);
+
+        // sasuke
+        glm::mat4 sasukeModel = initSasukeModel();
+        modelShader.setMat4("model", sasukeModel);
+        sasuke.Draw(modelShader);
+
+        // naruto
+        glm::mat4 narutoModel = initNarutoModel();
+        modelShader.setMat4("model", narutoModel);
+        naruto.Draw(modelShader);
+
+        // sakura
+        glm::mat4 sakuraModel = initSakuraModel();
+        modelShader.setMat4("model", sakuraModel);
+        sakura.Draw(modelShader);
 
         drawStands(VAO, groundShader, indices_count);
 
@@ -183,6 +201,32 @@ int main()
     // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
+}
+
+glm::mat4 initKakashiModel(){
+    glm::mat4 kakashiModel = glm::mat4(1.0f);
+    kakashiModel = glm::translate(kakashiModel, glm::vec3(-3.9f, -0.4f, 0.0f));
+    kakashiModel = glm::scale(kakashiModel, glm::vec3(0.1f));
+    return kakashiModel;
+}
+glm::mat4 initSasukeModel(){
+    glm::mat4 sasukeModel = glm::mat4(1.0f);
+    sasukeModel = glm::translate(sasukeModel, glm::vec3(-1.3f, -0.4f, 0.0f));
+    sasukeModel = glm::scale(sasukeModel, glm::vec3(0.105f));
+    return sasukeModel;
+}
+glm::mat4 initNarutoModel(){
+    glm::mat4 narutoModel = glm::mat4(1.0f);
+    narutoModel = glm::translate(narutoModel, glm::vec3(1.3f, -0.4f, 0.0f));
+    narutoModel = glm::scale(narutoModel, glm::vec3(0.1f));
+    return narutoModel;
+}
+glm::mat4 initSakuraModel(){
+    glm::mat4 sakuraModel = glm::mat4(1.0f);
+    sakuraModel = glm::translate(sakuraModel, glm::vec3(3.6f, 0.4f, 7.0f));
+    sakuraModel = glm::rotate(sakuraModel, glm::radians(-80.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    sakuraModel = glm::scale(sakuraModel, glm::vec3(2.0f));
+    return sakuraModel;
 }
 
 void drawStands(unsigned int VAO, Shader shader, int indices_count){
