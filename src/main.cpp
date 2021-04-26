@@ -14,18 +14,17 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 glm::mat4 static_camera();
-glm::mat4 repositionAndDrawStand(glm::mat4 model, Shader shader, int indices_count);
 void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders);
-glm::mat4 setAndDrawInitialStand(unsigned int VAO, Shader shader, int indices_count);
-void drawStands(unsigned int VAO, Shader shader, int indices_count);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indices_count);
 
 glm::mat4 initKakashiModel();
 glm::mat4 initSasukeModel();
 glm::mat4 initNarutoModel();
 glm::mat4 initSakuraModel();
 
-int selectedStand = 0;
+unsigned selectedStand = 0;
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -96,8 +95,10 @@ int main()
     Model sakura(FileSystem::getPath("resources/objects/sakura/sakura.obj"));
 
     Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
+    Shader selectedStandShader("resources/shaders/selected_shader.vs", "resources/shaders/selected_stand.fs");
 
-    vector<Shader*> shaders = {&groundShader, &modelShader};
+    vector<Shader*> shaders = {&groundShader, &modelShader, &selectedStandShader};
+
 
     /* DRAWING OBJECT WITH EBO */
     float ground_vertices[] = {
@@ -152,6 +153,20 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
+    /* Stand set up */
+    // Stand model 0 - initial - kakashi
+    glm::mat4 standModel_0 = glm::mat4(1.0f);
+    standModel_0 = glm::translate(standModel_0, glm::vec3(-3.9f, -0.5f, 0.0f));
+    standModel_0 = glm::rotate(standModel_0, glm::radians(10.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    standModel_0 = glm::scale(standModel_0, glm::vec3(2.0f, 1.0f, 2.0f));
+    // Stand model 1 - sasuke
+    glm::mat4 standModel_1 = glm::translate(standModel_0, glm::vec3(1.3f, 0.0f, 0.0f));
+    // Stand model 1 - naruto
+    glm::mat4 standModel_2 = glm::translate(standModel_1, glm::vec3(1.3f, 0.0f, 0.0f));
+    // Stand model 1 - sakura
+    glm::mat4 standModel_3 = glm::translate(standModel_2, glm::vec3(1.3f, 0.0f, 0.0f));
+
+    vector<glm::mat4> stand_models = {standModel_0, standModel_1, standModel_2, standModel_3};
 
     // draw in wireframe
 //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -160,6 +175,7 @@ int main()
     // -----------
     while (!glfwWindowShouldClose(window))
     {
+        /* initial set up */
         auto currentFrame = (float)glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -171,29 +187,36 @@ int main()
 
         setViewAndProjectionMatrixForAllShaders(shaders);
 
-        // render the loaded models
+        /* render the loaded models */
+        modelShader.use();
 
-        // kakashi
+            // kakashi
         glm::mat4 kakashiModel = initKakashiModel();
         modelShader.setMat4("model", kakashiModel);
         kakashi.Draw(modelShader);
 
-        // sasuke
+            // sasuke
         glm::mat4 sasukeModel = initSasukeModel();
         modelShader.setMat4("model", sasukeModel);
         sasuke.Draw(modelShader);
 
-        // naruto
+            // naruto
         glm::mat4 narutoModel = initNarutoModel();
         modelShader.setMat4("model", narutoModel);
         naruto.Draw(modelShader);
 
-        // sakura
+            // sakura
         glm::mat4 sakuraModel = initSakuraModel();
         modelShader.setMat4("model", sakuraModel);
         sakura.Draw(modelShader);
 
-        drawStands(VAO, groundShader, indices_count);
+        /* Draw stands */
+        for(unsigned i = 0; i < stand_models.size(); i++){
+            if(i == selectedStand)
+                drawStand(VAO, stand_models[i], selectedStandShader, indices_count);
+            else
+                drawStand(VAO, stand_models[i], groundShader, indices_count);
+        }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -245,46 +268,26 @@ void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders){
     }
 }
 
-void drawStands(unsigned int VAO, Shader shader, int indices_count){
-    glm::mat4 model = setAndDrawInitialStand(VAO, shader, indices_count);
-    model = repositionAndDrawStand(model, shader, indices_count);
-    model = repositionAndDrawStand(model, shader, indices_count);
-    repositionAndDrawStand(model, shader, indices_count);
-}
 
-glm::mat4 setAndDrawInitialStand(unsigned int VAO, Shader shader, int indices_count){
-
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(-3.9f, -0.5f, 0.0f));
-    model = glm::rotate(model, glm::radians(10.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::scale(model, glm::vec3(2.0f, 1.0f, 2.0f));
-
+glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indices_count){
     shader.use();
     shader.setMat4("model", model);
-
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT, nullptr);
-
     return model;
 }
 
-glm::mat4 repositionAndDrawStand(glm::mat4 model, Shader shader, int indices_count){
-    model = glm::translate(model, glm::vec3(1.3f, 0.0f, 0.0f));
-    shader.use();
-    shader.setMat4("model", model);
-    glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT, nullptr);
-    return model;
-}
-
-void processInput(GLFWwindow *window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+void processInput(GLFWwindow *window){
+    (void)window;
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
+    (void)scancode;
+    (void)mods;
     if(action == GLFW_RELEASE || action == GLFW_REPEAT)
         return;
+    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
     if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS && selectedStand < 3)
         selectedStand++;
     if(key == GLFW_KEY_LEFT && action == GLFW_PRESS && selectedStand > 0)
