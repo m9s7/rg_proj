@@ -81,53 +81,71 @@ int main()
 
     /* DRAWING OBJECT WITH EBO */
     float ground_vertices[] = {
-            // above
-            0.5f, 0.1f, 0.5f,       //A0
-            0.5f, 0.1f, -0.5f,      //B1
-            -0.5f, 0.1f, 0.5f,      //C2
-            -0.5f, 0.1f, -0.5f,     //D3
-            // below
-            0.5f, -0.1f, 0.5f,      //E4
-            0.5f, -0.1f, -0.5f,     //F5
-            -0.5f, -0.1f, 0.5f,     //G6
-            -0.5f, -0.1f, -0.5f,    //H7
+            0.5f, 0.1f, 0.5f, 0.0f, 1.0f, 0.0f,     //A0
+            0.5f, 0.1f, -0.5f, 0.0f, 1.0f, 0.0f,    //B1
+            -0.5f, 0.1f, 0.5f, 0.0f, 1.0f, 0.0f,    //C2
+
+            0.5f, 0.1f, -0.5f, 0.0f, 1.0f, 0.0f,    //B1
+            -0.5f, 0.1f, 0.5f, 0.0f, 1.0f, 0.0f,     //C2
+            -0.5f, 0.1f, -0.5f, 0.0f, 1.0f, 0.0f,   //D3
+
+            0.5f, 0.1f, 0.5f, 1.0f, 0.0f, 0.0f,      //A0
+            0.5f, 0.1f, -0.5f, 1.0f, 0.0f, 0.0f,     //B1
+            0.5f, -0.1f, 0.5f, 1.0f, 0.0f, 0.0f,     //E4
+
+            0.5f, 0.1f, -0.5f, 1.0f, 0.0f, 0.0f,     //B1
+            0.5f, -0.1f, 0.5f, 1.0f, 0.0f, 0.0f,     //E4
+            0.5f, -0.1f, -0.5f, 1.0f, 0.0f, 0.0f,    //F5
+
+            0.5f, 0.1f, -0.5f, 0.0f, 0.0f, 1.0f,     //B1
+            -0.5f, 0.1f, -0.5f, 0.0f, 0.0f, 1.0f,    //D3
+            0.5f, -0.1f, -0.5f, 0.0f, 0.0f, 1.0f,    //F5
+
+            -0.5f, 0.1f, -0.5f, 0.0f, 0.0f, 1.0f,    //D3
+            0.5f, -0.1f, -0.5f, 0.0f, 0.0f, 1.0f,    //F5
+            -0.5f, -0.1f, -0.5f, 0.0f, 0.0f, 1.0f,   //H7
+
+            -0.5f, 0.1f, 0.5f, -1.0f, 0.0f, 0.0f,     //C2
+            -0.5f, 0.1f, -0.5f, -1.0f, 0.0f, 0.0f,    //D3
+            -0.5f, -0.1f, 0.5f, -1.0f, 0.0f, 0.0f,    //G6
+
+            -0.5f, 0.1f, -0.5f, -1.0f, 0.0f, 0.0f,    //D3
+            -0.5f, -0.1f, 0.5f,  -1.0f, 0.0f, 0.0f,   //G6
+            -0.5f, -0.1f, -0.5f, -1.0f, 0.0f, 0.0f,   //H7
+
+            0.5f, 0.1f, 0.5f, 0.0f, 0.0f, -1.0f,      //A0
+            -0.5f, 0.1f, 0.5f, 0.0f, 0.0f, -1.0f,     //C2
+            0.5f, -0.1f, 0.5f, 0.0f, 0.0f, -1.0f,     //E4
+
+            -0.5f, 0.1f, 0.5f, 0.0f, 0.0f, -1.0f,     //C2
+            0.5f, -0.1f, 0.5f, 0.0f, 0.0f, -1.0f,     //E4
+            -0.5f, -0.1f, 0.5f, 0.0f, 0.0f, -1.0f,    //G6
+
+            0.5f, -0.1f, 0.5f, 0.0f, -1.0f, 0.0f,     //E4
+            0.5f, -0.1f, -0.5f, 0.0f, -1.0f, 0.0f,    //F5
+            -0.5f, -0.1f, 0.5f, 0.0f, -1.0f, 0.0f,    //G6
+
+            0.5f, -0.1f, -0.5f, 0.0f, -1.0f, 0.0f,    //F5
+            -0.5f, -0.1f, 0.5f, 0.0f, -1.0f, 0.0f,    //G6
+            -0.5f, -0.1f, -0.5f, 0.0f, -1.0f, 0.0f,   //H7
     };
-    unsigned ground_indices[] = {
-        0, 1, 2,
-        1, 2, 3,
 
-        4, 5, 6,
-        5, 6, 7,
-
-        0, 1, 4,
-        1, 4, 5,
-
-        1, 3, 5,
-        3, 5, 7,
-
-        2, 3, 6,
-        3, 6, 7,
-
-        0, 2, 4,
-        2, 4, 6
-    };
-    int indices_count = sizeof(ground_indices)/sizeof(ground_indices[0]);
-    unsigned int VBO, VAO, EBO;
+    int indices_count = 36;
+    unsigned int VBO, VAO;
 
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
     glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(ground_vertices), ground_vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ground_indices), ground_indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)nullptr);
     glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -154,8 +172,6 @@ int main()
     Shader modelShader("resources/shaders/model_shader.vs", "resources/shaders/model_shader.fs");
 
     ModelManager mm = ModelManager();
-    mm.printModels();
-
 
     /* Shaders */
     vector<Shader*> shaders = {&groundShader, &modelShader, &selectedStandShader};
@@ -188,14 +204,13 @@ int main()
         mm.drawCharacter(NARUTO, modelShader);
         mm.drawCharacter(SAKURA, modelShader);
 
-
         /* Draw stands */
         for(unsigned i = 0; i < stand_models.size(); i++) {
-            if (i == selectedStand){
+            if (i == selectedStand)
                 drawStand(VAO, stand_models[i], selectedStandShader, indices_count);
-            }else
+            else
                 drawStand(VAO, stand_models[i], groundShader, indices_count);
-            }
+        }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -224,7 +239,7 @@ glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indic
     shader.use();
     shader.setMat4("model", model);
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT, nullptr);
+    glDrawArrays(GL_TRIANGLES, 0, indices_count);
     return model;
 }
 
