@@ -154,6 +154,8 @@ int main()
     Shader modelShader("resources/shaders/model_shader.vs", "resources/shaders/model_shader.fs");
 
     ModelManager mm = ModelManager();
+    mm.printModels();
+
 
     /* Shaders */
     vector<Shader*> shaders = {&groundShader, &modelShader, &selectedStandShader};
@@ -180,6 +182,7 @@ int main()
 
         /* render the loaded models */ //- can all be moved to 1 function
 
+        mm.setSelectedModel(static_cast<Character>(selectedStand));
         mm.drawCharacter(KAKASHI, modelShader);
         mm.drawCharacter(SASUKE, modelShader);
         mm.drawCharacter(NARUTO, modelShader);
@@ -190,9 +193,8 @@ int main()
         for(unsigned i = 0; i < stand_models.size(); i++) {
             if (i == selectedStand){
                 drawStand(VAO, stand_models[i], selectedStandShader, indices_count);
-//                drawCharacter(sakuraModel, sakura, modelShader);
             }else
-                    drawStand(VAO, stand_models[i], groundShader, indices_count);
+                drawStand(VAO, stand_models[i], groundShader, indices_count);
             }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -241,6 +243,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         selectedStand++;
     if(key == GLFW_KEY_LEFT && action == GLFW_PRESS && selectedStand > 0)
         selectedStand--;
+
 
     std::cout << selectedStand << std::endl;
 }

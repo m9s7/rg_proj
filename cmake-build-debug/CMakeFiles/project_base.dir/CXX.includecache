@@ -103,6 +103,10 @@ common.h
 ../include/model_manager.h
 learnopengl/model.h
 -
+glm/gtx/string_cast.hpp
+-
+glm/gtc/type_ptr.hpp
+-
 
 ../include/stb_image.h
 stb_image.h
