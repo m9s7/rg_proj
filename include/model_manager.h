@@ -18,6 +18,7 @@ public:
     glm::mat4 modelMatrix;
     glm::mat4 initialModelMatrix;
 //    glm::mat4 standMatrix;
+//    glm::vec3 standPosition;
 
     explicit MyModel(Character character)
     {

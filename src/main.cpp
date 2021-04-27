@@ -21,6 +21,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indices_count);
 
 unsigned selectedStand = 0;
+glm::vec3 *light_position;
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -154,17 +155,22 @@ int main()
     Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
     Shader selectedStandShader("resources/shaders/selected_shader.vs", "resources/shaders/selected_stand.fs");
 
+    glm::vec3 stand_position_0 = glm::vec3(-3.9f, -0.5f, 0.0f);
+    glm::vec3 stand_position_1 = glm::vec3(1.3f, 0.0f, 0.0f);
+    glm::vec3 stand_position_2 = glm::vec3(1.3f, 0.0f, 0.0f);
+    glm::vec3 stand_position_3 = glm::vec3(1.3f, 0.0f, 0.0f);
+
     // Stand model 0 - initial - kakashi
     glm::mat4 standModel_0 = glm::mat4(1.0f);
-    standModel_0 = glm::translate(standModel_0, glm::vec3(-3.9f, -0.5f, 0.0f));
-    standModel_0 = glm::rotate(standModel_0, glm::radians(10.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    standModel_0 = glm::translate(standModel_0, stand_position_0);
+//    standModel_0 = glm::rotate(standModel_0, glm::radians(10.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     standModel_0 = glm::scale(standModel_0, glm::vec3(2.0f, 1.0f, 2.0f));
     // Stand model 1 - sasuke
-    glm::mat4 standModel_1 = glm::translate(standModel_0, glm::vec3(1.3f, 0.0f, 0.0f));
+    glm::mat4 standModel_1 = glm::translate(standModel_0, stand_position_1);
     // Stand model 1 - naruto
-    glm::mat4 standModel_2 = glm::translate(standModel_1, glm::vec3(1.3f, 0.0f, 0.0f));
+    glm::mat4 standModel_2 = glm::translate(standModel_1, stand_position_2);
     // Stand model 1 - sakura
-    glm::mat4 standModel_3 = glm::translate(standModel_2, glm::vec3(1.3f, 0.0f, 0.0f));
+    glm::mat4 standModel_3 = glm::translate(standModel_2, stand_position_3);
 
     vector<glm::mat4> stand_models = {standModel_0, standModel_1, standModel_2, standModel_3};
 
@@ -199,6 +205,18 @@ int main()
         /* render the loaded models */ //- can all be moved to 1 function
 
         mm.setSelectedModel(static_cast<Character>(selectedStand));
+
+        // Set light position
+        switch (selectedStand) {
+            case 0: light_position = &stand_position_0; break;
+            case 1: light_position = &stand_position_1; break;
+            case 2: light_position = &stand_position_2; break;
+            case 3: light_position = &stand_position_3; break;
+            default: cout << "greska" << endl;
+        }
+
+        // Draw characters
+//        modelShader.setVec3("lightPos", *light_position);
         mm.drawCharacter(KAKASHI, modelShader);
         mm.drawCharacter(SASUKE, modelShader);
         mm.drawCharacter(NARUTO, modelShader);
@@ -237,6 +255,7 @@ void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders){
 
 glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indices_count){
     shader.use();
+    shader.setVec3("lightPos", *light_position);
     shader.setMat4("model", model);
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, indices_count);
