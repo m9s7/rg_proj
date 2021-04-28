@@ -19,6 +19,8 @@ void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indices_count);
+void initPodiumModelMatrices(vector<glm::mat4> &standModels, vector<glm::vec3> &standPosition);
+glm::mat4 initPodiumModelMatrix(glm::vec3 stand_position);
 
 unsigned selectedStand = 0;
 glm::vec3 *light_position;
@@ -82,53 +84,53 @@ int main()
 
     /* DRAWING OBJECT WITH EBO */
     float ground_vertices[] = {
-            0.5f, 0.1f, 0.5f, 0.0f, 1.0f, 0.0f,     //A0
-            0.5f, 0.1f, -0.5f, 0.0f, 1.0f, 0.0f,    //B1
-            -0.5f, 0.1f, 0.5f, 0.0f, 1.0f, 0.0f,    //C2
+            0.5f, 0.05f, 0.5f, 0.0f, 1.0f, 0.0f,     //A0
+            0.5f, 0.05f, -0.5f, 0.0f, 1.0f, 0.0f,    //B1
+            -0.5f, 0.05f, 0.5f, 0.0f, 1.0f, 0.0f,    //C2
 
-            0.5f, 0.1f, -0.5f, 0.0f, 1.0f, 0.0f,    //B1
-            -0.5f, 0.1f, 0.5f, 0.0f, 1.0f, 0.0f,     //C2
-            -0.5f, 0.1f, -0.5f, 0.0f, 1.0f, 0.0f,   //D3
+            0.5f, 0.05f, -0.5f, 0.0f, 1.0f, 0.0f,    //B1
+            -0.5f, 0.05f, 0.5f, 0.0f, 1.0f, 0.0f,     //C2
+            -0.5f, 0.05f, -0.5f, 0.0f, 1.0f, 0.0f,   //D3
 
-            0.5f, 0.1f, 0.5f, 1.0f, 0.0f, 0.0f,      //A0
-            0.5f, 0.1f, -0.5f, 1.0f, 0.0f, 0.0f,     //B1
-            0.5f, -0.1f, 0.5f, 1.0f, 0.0f, 0.0f,     //E4
+            0.5f, 0.05f, 0.5f, 1.0f, 0.0f, 0.0f,      //A0
+            0.5f, 0.05f, -0.5f, 1.0f, 0.0f, 0.0f,     //B1
+            0.5f, -0.05f, 0.5f, 1.0f, 0.0f, 0.0f,     //E4
 
-            0.5f, 0.1f, -0.5f, 1.0f, 0.0f, 0.0f,     //B1
-            0.5f, -0.1f, 0.5f, 1.0f, 0.0f, 0.0f,     //E4
-            0.5f, -0.1f, -0.5f, 1.0f, 0.0f, 0.0f,    //F5
+            0.5f, 0.05f, -0.5f, 1.0f, 0.0f, 0.0f,     //B1
+            0.5f, -0.05f, 0.5f, 1.0f, 0.0f, 0.0f,     //E4
+            0.5f, -0.05f, -0.5f, 1.0f, 0.0f, 0.0f,    //F5
 
-            0.5f, 0.1f, -0.5f, 0.0f, 0.0f, 1.0f,     //B1
-            -0.5f, 0.1f, -0.5f, 0.0f, 0.0f, 1.0f,    //D3
-            0.5f, -0.1f, -0.5f, 0.0f, 0.0f, 1.0f,    //F5
+            0.5f, 0.05f, -0.5f, 0.0f, 0.0f, 1.0f,     //B1
+            -0.5f, 0.05f, -0.5f, 0.0f, 0.0f, 1.0f,    //D3
+            0.5f, -0.05f, -0.5f, 0.0f, 0.0f, 1.0f,    //F5
 
-            -0.5f, 0.1f, -0.5f, 0.0f, 0.0f, 1.0f,    //D3
-            0.5f, -0.1f, -0.5f, 0.0f, 0.0f, 1.0f,    //F5
-            -0.5f, -0.1f, -0.5f, 0.0f, 0.0f, 1.0f,   //H7
+            -0.5f, 0.05f, -0.5f, 0.0f, 0.0f, 1.0f,    //D3
+            0.5f, -0.05f, -0.5f, 0.0f, 0.0f, 1.0f,    //F5
+            -0.5f, -0.05f, -0.5f, 0.0f, 0.0f, 1.0f,   //H7
 
-            -0.5f, 0.1f, 0.5f, -1.0f, 0.0f, 0.0f,     //C2
-            -0.5f, 0.1f, -0.5f, -1.0f, 0.0f, 0.0f,    //D3
-            -0.5f, -0.1f, 0.5f, -1.0f, 0.0f, 0.0f,    //G6
+            -0.5f, 0.05f, 0.5f, -1.0f, 0.0f, 0.0f,     //C2
+            -0.5f, 0.05f, -0.5f, -1.0f, 0.0f, 0.0f,    //D3
+            -0.5f, -0.05f, 0.5f, -1.0f, 0.0f, 0.0f,    //G6
 
-            -0.5f, 0.1f, -0.5f, -1.0f, 0.0f, 0.0f,    //D3
-            -0.5f, -0.1f, 0.5f,  -1.0f, 0.0f, 0.0f,   //G6
-            -0.5f, -0.1f, -0.5f, -1.0f, 0.0f, 0.0f,   //H7
+            -0.5f, 0.05f, -0.5f, -1.0f, 0.0f, 0.0f,    //D3
+            -0.5f, -0.05f, 0.5f,  -1.0f, 0.0f, 0.0f,   //G6
+            -0.5f, -0.05f, -0.5f, -1.0f, 0.0f, 0.0f,   //H7
 
-            0.5f, 0.1f, 0.5f, 0.0f, 0.0f, -1.0f,      //A0
-            -0.5f, 0.1f, 0.5f, 0.0f, 0.0f, -1.0f,     //C2
-            0.5f, -0.1f, 0.5f, 0.0f, 0.0f, -1.0f,     //E4
+            0.5f, 0.05f, 0.5f, 0.0f, 0.0f, -1.0f,      //A0
+            -0.5f, 0.05f, 0.5f, 0.0f, 0.0f, -1.0f,     //C2
+            0.5f, -0.05f, 0.5f, 0.0f, 0.0f, -1.0f,     //E4
 
-            -0.5f, 0.1f, 0.5f, 0.0f, 0.0f, -1.0f,     //C2
-            0.5f, -0.1f, 0.5f, 0.0f, 0.0f, -1.0f,     //E4
-            -0.5f, -0.1f, 0.5f, 0.0f, 0.0f, -1.0f,    //G6
+            -0.5f, 0.05f, 0.5f, 0.0f, 0.0f, -1.0f,     //C2
+            0.5f, -0.05f, 0.5f, 0.0f, 0.0f, -1.0f,     //E4
+            -0.5f, -0.05f, 0.5f, 0.0f, 0.0f, -1.0f,    //G6
 
-            0.5f, -0.1f, 0.5f, 0.0f, -1.0f, 0.0f,     //E4
-            0.5f, -0.1f, -0.5f, 0.0f, -1.0f, 0.0f,    //F5
-            -0.5f, -0.1f, 0.5f, 0.0f, -1.0f, 0.0f,    //G6
+            0.5f, -0.05f, 0.5f, 0.0f, -1.0f, 0.0f,     //E4
+            0.5f, -0.05f, -0.5f, 0.0f, -1.0f, 0.0f,    //F5
+            -0.5f, -0.05f, 0.5f, 0.0f, -1.0f, 0.0f,    //G6
 
-            0.5f, -0.1f, -0.5f, 0.0f, -1.0f, 0.0f,    //F5
-            -0.5f, -0.1f, 0.5f, 0.0f, -1.0f, 0.0f,    //G6
-            -0.5f, -0.1f, -0.5f, 0.0f, -1.0f, 0.0f,   //H7
+            0.5f, -0.05f, -0.5f, 0.0f, -1.0f, 0.0f,    //F5
+            -0.5f, -0.05f, 0.5f, 0.0f, -1.0f, 0.0f,    //G6
+            -0.5f, -0.05f, -0.5f, 0.0f, -1.0f, 0.0f,   //H7
     };
 
     int indices_count = 36;
@@ -155,24 +157,11 @@ int main()
     Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
     Shader selectedStandShader("resources/shaders/selected_shader.vs", "resources/shaders/selected_stand.fs");
 
-    glm::vec3 stand_position_0 = glm::vec3(-3.9f, -0.5f, 0.0f);
-    glm::vec3 stand_position_1 = glm::vec3(1.3f, 0.0f, 0.0f);
-    glm::vec3 stand_position_2 = glm::vec3(1.3f, 0.0f, 0.0f);
-    glm::vec3 stand_position_3 = glm::vec3(1.3f, 0.0f, 0.0f);
+    // fix light position, remove non uniform scaling, still no shadows
 
-    // Stand model 0 - initial - kakashi
-    glm::mat4 standModel_0 = glm::mat4(1.0f);
-    standModel_0 = glm::translate(standModel_0, stand_position_0);
-//    standModel_0 = glm::rotate(standModel_0, glm::radians(10.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    standModel_0 = glm::scale(standModel_0, glm::vec3(2.0f, 1.0f, 2.0f));
-    // Stand model 1 - sasuke
-    glm::mat4 standModel_1 = glm::translate(standModel_0, stand_position_1);
-    // Stand model 1 - naruto
-    glm::mat4 standModel_2 = glm::translate(standModel_1, stand_position_2);
-    // Stand model 1 - sakura
-    glm::mat4 standModel_3 = glm::translate(standModel_2, stand_position_3);
-
-    vector<glm::mat4> stand_models = {standModel_0, standModel_1, standModel_2, standModel_3};
+    vector<glm::mat4> standModels;
+    vector<glm::vec3> standPosition;
+    initPodiumModelMatrices(standModels, standPosition);
 
     /*Model set up*/
     Shader modelShader("resources/shaders/model_shader.vs", "resources/shaders/model_shader.fs");
@@ -207,13 +196,7 @@ int main()
         mm.setSelectedModel(static_cast<Character>(selectedStand));
 
         // Set light position
-        switch (selectedStand) {
-            case 0: light_position = &stand_position_0; break;
-            case 1: light_position = &stand_position_1; break;
-            case 2: light_position = &stand_position_2; break;
-            case 3: light_position = &stand_position_3; break;
-            default: cout << "greska" << endl;
-        }
+        light_position = &standPosition[selectedStand];
 
         // Draw characters
 //        modelShader.setVec3("lightPos", *light_position);
@@ -223,11 +206,11 @@ int main()
         mm.drawCharacter(SAKURA, modelShader);
 
         /* Draw stands */
-        for(unsigned i = 0; i < stand_models.size(); i++) {
+        for(unsigned i = 0; i < standModels.size(); i++) {
             if (i == selectedStand)
-                drawStand(VAO, stand_models[i], selectedStandShader, indices_count);
+                drawStand(VAO, standModels[i], selectedStandShader, indices_count);
             else
-                drawStand(VAO, stand_models[i], groundShader, indices_count);
+                drawStand(VAO, standModels[i], groundShader, indices_count);
         }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -260,6 +243,23 @@ glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indic
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, indices_count);
     return model;
+}
+
+void initPodiumModelMatrices(vector<glm::mat4> &standModels, vector<glm::vec3> &standPosition){
+    standPosition.emplace_back(-3.9f, -0.5f, 0.0f);
+    standPosition.emplace_back(-1.3f, -0.5f, 0.0f);
+    standPosition.emplace_back(1.3f, -0.5f, 0.0f);
+    standPosition.emplace_back(3.9f, -0.5f, 0.0f);
+
+    for(auto & i : standPosition)
+        standModels.push_back(initPodiumModelMatrix(i));
+}
+
+glm::mat4 initPodiumModelMatrix(glm::vec3 stand_position){
+    glm::mat4 standModel = glm::mat4(1.0f);
+    standModel = glm::translate(standModel, stand_position);
+    standModel = glm::scale(standModel, glm::vec3(2.0f));
+    return standModel;
 }
 
 void processInput(GLFWwindow *window){
