@@ -157,8 +157,6 @@ int main()
     Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
     Shader selectedStandShader("resources/shaders/selected_shader.vs", "resources/shaders/selected_stand.fs");
 
-    // fix light position, remove non uniform scaling, still no shadows
-
     vector<glm::mat4> standModels;
     vector<glm::vec3> standPosition;
     initPodiumModelMatrices(standModels, standPosition);

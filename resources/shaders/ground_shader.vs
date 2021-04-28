@@ -13,7 +13,9 @@ uniform mat4 view;
 uniform mat4 projection;
 
 void main(){
-    viewPos = vec3(view);
+    // Ovo ti je camera position ako ikad ne bude staticna to moras da prosledis od spolja
+    viewPos = vec3(0.0f, 2.0f, 10.0f);
+
     Normal = mat3(transpose(inverse(model))) * aNormal;
     FragPos = vec3(model * vec4(aPos, 1.0f));
 
