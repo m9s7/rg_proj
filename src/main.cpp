@@ -21,6 +21,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indices_count);
 void initPodiumModelMatrices(vector<glm::mat4> &standModels, vector<glm::vec3> &standPosition);
 glm::mat4 initPodiumModelMatrix(glm::vec3 stand_position);
+unsigned int loadTexture(const char *path);
 
 unsigned selectedStand = 0;
 glm::vec3 *light_position;
@@ -86,47 +87,47 @@ int main()
     float ground_vertices[] = {
             // vert(3), norm(3), tex(2)
             0.5f, 0.05f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,    //A0
-            0.5f, 0.05f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,    //B1
+            0.5f, 0.05f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,    //B1
             -0.5f, 0.05f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,   //C2
 
             0.5f, 0.05f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,    //B1
             -0.5f, 0.05f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,     //C2
             -0.5f, 0.05f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,   //D3
 
-            0.5f, 0.05f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   //A0
-            0.5f, 0.05f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,    //B1
+            0.5f, 0.05f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.2f,   //A0
+            0.5f, 0.05f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.2f,    //B1
             0.5f, -0.05f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,    //E4
 
-            0.5f, 0.05f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,    //B1
+            0.5f, 0.05f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.2f,    //B1
             0.5f, -0.05f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,    //E4
             0.5f, -0.05f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,   //F5
 
-            0.5f, 0.05f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,    //B1
-            -0.5f, 0.05f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,   //D3
+            0.5f, 0.05f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.2f,    //B1
+            -0.5f, 0.05f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.2f,   //D3
             0.5f, -0.05f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,   //F5
 
-            -0.5f, 0.05f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,   //D3
+            -0.5f, 0.05f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.2f,   //D3
             0.5f, -0.05f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,   //F5
             -0.5f, -0.05f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,  //H7
 
-            -0.5f, 0.05f, 0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,    //C2
-            -0.5f, 0.05f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   //D3
+            -0.5f, 0.05f, 0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 0.2f,    //C2
+            -0.5f, 0.05f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.2f,   //D3
             -0.5f, -0.05f, 0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,   //G6
 
-            -0.5f, 0.05f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   //D3
+            -0.5f, 0.05f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.2f,   //D3
             -0.5f, -0.05f, 0.5f,  -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,  //G6
             -0.5f, -0.05f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,  //H7
 
-            0.5f, 0.05f, 0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,     //A0
-            -0.5f, 0.05f, 0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,    //C2
+            0.5f, 0.05f, 0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.2f,     //A0
+            -0.5f, 0.05f, 0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.2f,    //C2
             0.5f, -0.05f, 0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,    //E4
 
-            -0.5f, 0.05f, 0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,    //C2
+            -0.5f, 0.05f, 0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.2f,    //C2
             0.5f, -0.05f, 0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,    //E4
             -0.5f, -0.05f, 0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,   //G6
 
             0.5f, -0.05f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,     //E4
-            0.5f, -0.05f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,   //F5
+            0.5f, -0.05f, -0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,   //F5
             -0.5f, -0.05f, 0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,   //G6
 
             0.5f, -0.05f, -0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,    //F5
@@ -151,7 +152,7 @@ int main()
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(5*sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(6*sizeof(float)));
     glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -173,6 +174,13 @@ int main()
     /* Shaders */
     vector<Shader*> shaders = {&groundShader, &modelShader, &selectedStandShader};
 
+    // Loading texture
+    unsigned int diffuseMap = loadTexture(FileSystem::getPath("resources/textures/rocks/Rock_Mosaic_DIFF.png").c_str());
+    unsigned int specularMap = loadTexture(FileSystem::getPath("resources/textures/rocks/Rock_Mosaic_SPEC.png").c_str());
+
+    groundShader.use();
+    groundShader.setInt("material.diffuse", 0);
+    groundShader.setInt("material.specular", 1);
 
     // draw in wireframe
 //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -199,6 +207,13 @@ int main()
 
         // Set light position
         light_position = &standPosition[selectedStand];
+        groundShader.use();
+        groundShader.setVec3("light.ambient", 0.6f, 0.6f, 0.6f);
+        groundShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
+        groundShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
+        groundShader.setVec3("material.ambient", 1.0f, 1.0f, 1.0f);
+        groundShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
 
         // Draw characters
 //        modelShader.setVec3("lightPos", *light_position);
@@ -206,6 +221,15 @@ int main()
         mm.drawCharacter(SASUKE, modelShader);
         mm.drawCharacter(NARUTO, modelShader);
         mm.drawCharacter(SAKURA, modelShader);
+
+        // Postavimo teksturu i proprties za groundShader
+
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, diffuseMap);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, specularMap);
+
 
         /* Draw stands */
         for(unsigned i = 0; i < standModels.size(); i++) {
@@ -240,7 +264,7 @@ void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders){
 
 glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indices_count){
     shader.use();
-    shader.setVec3("lightPos", *light_position);
+    shader.setVec3("light.position", *light_position);
     shader.setMat4("model", model);
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, indices_count);
@@ -297,4 +321,42 @@ glm::mat4 static_camera(){
     glm::vec3 Right = glm::normalize(glm::cross(Front, WorldUp));
     glm::vec3 Up = glm::normalize(glm::cross(Right, Front));
     return glm::lookAt(Position, Position + Front, Up);
+}
+
+unsigned int loadTexture(const char *path){
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrComponents;
+
+    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
+    if(!data){
+        cout << "Texture failed to load" << endl;
+        stbi_image_free(data);
+        return textureID;
+    }
+
+    GLint format;
+    if(nrComponents == 2)
+        format = GL_RED;
+    else if(nrComponents == 3)
+        format = GL_RGB;
+    else if(nrComponents == 4)
+        format = GL_RGBA;
+    else{
+        cout << "Greska u ucitavanju texture (format)" << endl;
+        return textureID;
+    }
+
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //GL_LINEAR_MIPMAP_LINEAR
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_image_free(data);
+    return textureID;
 }
