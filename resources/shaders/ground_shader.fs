@@ -8,6 +8,8 @@ out vec4 FragColor;
 uniform vec3 lightPos;
 // uniform vec3 viewPos;
 
+// mogu da dodam strukture za materijal i svetlo <jacine svake komponente + lightPos>
+
 void main()
 {
     // there are no shadows?
