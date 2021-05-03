@@ -108,7 +108,7 @@ public:
         if(this->selectedModel != type){
             models[selectedModel]->resetModelMatrix();
             this->selectedModel = type;
-            printModels();
+//            printModels();
         }
     }
 

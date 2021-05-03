@@ -159,8 +159,7 @@ int main()
     glBindVertexArray(0);
 
     /* Stand set up */
-//    Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
-    Shader groundShader("resources/shaders/multiple_lights.vs", "resources/shaders/multiple_lights.fs");
+    Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
     Shader selectedStandShader("resources/shaders/selected_shader.vs", "resources/shaders/selected_stand.fs");
 
     vector<glm::mat4> standModels;
@@ -168,7 +167,8 @@ int main()
     initPodiumModelMatrices(standModels, standPosition);
 
     /*Model set up*/
-    Shader modelShader("resources/shaders/model_shader.vs", "resources/shaders/model_shader.fs");
+    Shader modelShader("resources/shaders/multiple_lights.vs", "resources/shaders/multiple_lights.fs");
+//    Shader modelShader("resources/shaders/model_shader.vs", "resources/shaders/model_shader.fs");
 
     ModelManager mm = ModelManager();
 
@@ -208,24 +208,25 @@ int main()
 
         // Set light position
         light_position = &standPosition[selectedStand];
-        groundShader.use();
 
-        groundShader.setVec3("dirLight.direction", 0.0f, 1.0f, 0.0f);
-        groundShader.setVec3("dirLight.ambient", 0.6f, 0.6f, 0.6f);
-        groundShader.setVec3("dirLight.diffuse", 0.5f, 0.5f, 0.5f);
-        groundShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+        modelShader.use();
 
-        groundShader.setVec3("pointLight.position", *light_position);
-        groundShader.setVec3("pointLight.ambient", 0.6f, 0.6f, 0.6f);
-        groundShader.setVec3("pointLight.diffuse", 0.5f, 0.5f, 0.5f);
-        groundShader.setVec3("pointLight.specular", 1.0f, 1.0f, 1.0f);
+        modelShader.setVec3("pointLight.position", light_position->x, light_position->y, light_position->z);
 
-        groundShader.setFloat("pointLight.constant", 1.0f);
-        groundShader.setFloat("pointLight.linear", 0.09f);
-        groundShader.setFloat("pointLight.quadratic", 0.032f);
+        modelShader.setVec3("dirLight.direction", 0.0f, -1.0f, -1.0f);
+        modelShader.setVec3("dirLight.ambient", 0.1f, 0.1f, 0.1f);
+        modelShader.setVec3("dirLight.diffuse", 0.5f, 0.5f, 0.5f);
+        modelShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+
+        modelShader.setVec3("pointLight.ambient", 0.2f, 0.2f, 0.2f);
+        modelShader.setVec3("pointLight.diffuse", 1.0f, 1.0f, 1.0f);
+        modelShader.setVec3("pointLight.specular", 1.0f, 1.0f, 1.0f);
+
+        modelShader.setFloat("pointLight.constant", 0.5f);
+        modelShader.setFloat("pointLight.linear", 0.09f);
+        modelShader.setFloat("pointLight.quadratic", 0.032f);
 
         // Draw characters
-//        modelShader.setVec3("lightPos", *light_position);
         mm.drawCharacter(KAKASHI, modelShader);
         mm.drawCharacter(SASUKE, modelShader);
         mm.drawCharacter(NARUTO, modelShader);
@@ -233,12 +234,27 @@ int main()
 
         // Postavimo teksturu i proprties za groundShader
 
-
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuseMap);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, specularMap);
 
+        groundShader.use();
+
+        groundShader.setVec3("pointLight.position", light_position->x, light_position->y, light_position->z);
+
+        groundShader.setVec3("dirLight.direction", 0.0f, -1.0f, 1.0f);
+        groundShader.setVec3("dirLight.ambient", 0.1f, 0.1f, 0.1f);
+        groundShader.setVec3("dirLight.diffuse", 0.5f, 0.5f, 0.5f);
+        groundShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+
+        groundShader.setVec3("pointLight.ambient", 0.2f, 0.2f, 0.2f);
+        groundShader.setVec3("pointLight.diffuse", 1.0f, 1.0f, 1.0f);
+        groundShader.setVec3("pointLight.specular", 1.0f, 1.0f, 1.0f);
+
+        groundShader.setFloat("pointLight.constant", 0.5f);
+        groundShader.setFloat("pointLight.linear", 0.09f);
+        groundShader.setFloat("pointLight.quadratic", 0.032f);
 
         /* Draw stands */
         for(unsigned i = 0; i < standModels.size(); i++) {
@@ -273,7 +289,6 @@ void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders){
 
 glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indices_count){
     shader.use();
-    shader.setVec3("light.position", *light_position);
     shader.setMat4("model", model);
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, indices_count);
@@ -312,7 +327,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         selectedStand++;
     if(key == GLFW_KEY_LEFT && action == GLFW_PRESS && selectedStand > 0)
         selectedStand--;
-
+    if(key == GLFW_KEY_E && action == GLFW_PRESS){
+        light_position->y = 100.0f;
+        cout << light_position->x << " ";
+        cout << light_position->y << " ";
+        cout << light_position->z << " ";
+        cout <<endl;
+    }
 
     std::cout << selectedStand << std::endl;
 }
