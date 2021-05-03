@@ -159,7 +159,8 @@ int main()
     glBindVertexArray(0);
 
     /* Stand set up */
-    Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
+//    Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
+    Shader groundShader("resources/shaders/multiple_lights.vs", "resources/shaders/multiple_lights.fs");
     Shader selectedStandShader("resources/shaders/selected_shader.vs", "resources/shaders/selected_stand.fs");
 
     vector<glm::mat4> standModels;
@@ -208,12 +209,20 @@ int main()
         // Set light position
         light_position = &standPosition[selectedStand];
         groundShader.use();
-        groundShader.setVec3("light.ambient", 0.6f, 0.6f, 0.6f);
-        groundShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
-        groundShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
-        groundShader.setVec3("material.ambient", 1.0f, 1.0f, 1.0f);
-        groundShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+        groundShader.setVec3("dirLight.direction", 0.0f, 1.0f, 0.0f);
+        groundShader.setVec3("dirLight.ambient", 0.6f, 0.6f, 0.6f);
+        groundShader.setVec3("dirLight.diffuse", 0.5f, 0.5f, 0.5f);
+        groundShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+
+        groundShader.setVec3("pointLight.position", *light_position);
+        groundShader.setVec3("pointLight.ambient", 0.6f, 0.6f, 0.6f);
+        groundShader.setVec3("pointLight.diffuse", 0.5f, 0.5f, 0.5f);
+        groundShader.setVec3("pointLight.specular", 1.0f, 1.0f, 1.0f);
+
+        groundShader.setFloat("pointLight.constant", 1.0f);
+        groundShader.setFloat("pointLight.linear", 0.09f);
+        groundShader.setFloat("pointLight.quadratic", 0.032f);
 
         // Draw characters
 //        modelShader.setVec3("lightPos", *light_position);
