@@ -83,6 +83,10 @@ int main()
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
 
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+
     /* DRAWING OBJECT WITH EBO */
     float ground_vertices[] = {
             // vert(3), norm(3), tex(2)
@@ -168,7 +172,6 @@ int main()
 
     /*Model set up*/
     Shader modelShader("resources/shaders/multiple_lights.vs", "resources/shaders/multiple_lights.fs");
-//    Shader modelShader("resources/shaders/model_shader.vs", "resources/shaders/model_shader.fs");
 
     ModelManager mm = ModelManager();
 
