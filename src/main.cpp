@@ -20,7 +20,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indices_count);
 void initPodiumModelMatrices(vector<glm::mat4> &standModels, vector<glm::vec3> &standPosition);
-glm::mat4 initPodiumModelMatrix(glm::vec3 stand_position);
 unsigned int loadTexture(const char *path);
 
 unsigned selectedStand = 0;
@@ -93,58 +92,58 @@ int main()
     float ground_vertices[] = {
             // vert(3), norm(3), tex(2)
             // ovo je top
-            0.5f, 0.05f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,    //A0
-            0.5f, 0.05f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,    //B1
-            -0.5f, 0.05f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,   //C2
+            1.0f, 0.1f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,    //A0
+            1.0f, 0.1f, -1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,    //B1
+            -1.0f, 0.1f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,   //C2
 
-            0.5f, 0.05f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,    //B1
-            -0.5f, 0.05f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,   //D3
-            -0.5f, 0.05f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,     //C2
+            1.0f, 0.1f, -1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,    //B1
+            -1.0f, 0.1f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,   //D3
+            -1.0f, 0.1f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,     //C2
 
             // ovo je desno
-            0.5f, 0.05f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.2f,    //B1
-            0.5f, 0.05f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.2f,     //A0
-            0.5f, -0.05f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,    //E4
+            1.0f, 0.1f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.2f,    //B1
+            1.0f, 0.1f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.2f,     //A0
+            1.0f, -0.1f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,    //E4
 
-            0.5f, 0.05f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.2f,    //B1
-            0.5f, -0.05f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,    //E4
-            0.5f, -0.05f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,   //F5
+            1.0f, 0.1f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.2f,    //B1
+            1.0f, -0.1f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,    //E4
+            1.0f, -0.1f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,   //F5
 
             // Ovo je back
-            -0.5f, 0.05f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.2f,   //D3
-            0.5f, 0.05f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.2f,    //B1
-            0.5f, -0.05f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,   //F5
+            -1.0f, 0.1f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.2f,   //D3
+            1.0f, 0.1f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.2f,    //B1
+            1.0f, -0.1f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,   //F5
 
-            -0.5f, 0.05f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.2f,   //D3
-            0.5f, -0.05f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,   //F5
-            -0.5f, -0.05f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,  //H7
+            -1.0f, 0.1f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.2f,   //D3
+            1.0f, -0.1f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,   //F5
+            -1.0f, -0.1f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,  //H7
 
             // ovo je levo
-            -0.5f, 0.05f, 0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 0.2f,    //C2
-            -0.5f, 0.05f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.2f,   //D3
-            -0.5f, -0.05f, 0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,   //G6
+            -1.0f, 0.1f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.2f,    //C2
+            -1.0f, 0.1f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.2f,   //D3
+            -1.0f, -0.1f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,   //G6
 
-            -0.5f, -0.05f, 0.5f,  -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,  //G6
-            -0.5f, 0.05f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.2f,   //D3
-            -0.5f, -0.05f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,  //H7
+            -1.0f, -0.1f, 1.0f,  -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,  //G6
+            -1.0f, 0.1f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.2f,   //D3
+            -1.0f, -0.1f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,  //H7
 
             // ovo je front
-            0.5f, 0.05f, 0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.2f,     //A0
-            -0.5f, 0.05f, 0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.2f,    //C2
-            0.5f, -0.05f, 0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,    //E4
+            1.0f, 0.1f, 1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.2f,     //A0
+            -1.0f, 0.1f, 1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.2f,    //C2
+            1.0f, -0.1f, 1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,    //E4
 
-            0.5f, -0.05f, 0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,    //E4
-            -0.5f, 0.05f, 0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.2f,    //C2
-            -0.5f, -0.05f, 0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,   //G6
+            1.0f, -0.1f, 1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,    //E4
+            -1.0f, 0.1f, 1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.2f,    //C2
+            -1.0f, -0.1f, 1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,   //G6
 
             // ovo je bottom
-            0.5f, -0.05f, -0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,   //F5
-            0.5f, -0.05f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,     //E4
-            -0.5f, -0.05f, 0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,   //G6
+            1.0f, -0.1f, -1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,   //F5
+            1.0f, -0.1f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,     //E4
+            -1.0f, -0.1f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,   //G6
 
-            0.5f, -0.05f, -0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,    //F5
-            -0.5f, -0.05f, 0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,   //G6
-            -0.5f, -0.05f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,  //H7
+            1.0f, -0.1f, -1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,    //F5
+            -1.0f, -0.1f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,   //G6
+            -1.0f, -0.1f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,  //H7
     };
 
     int indices_count = 36;
@@ -313,14 +312,7 @@ void initPodiumModelMatrices(vector<glm::mat4> &standModels, vector<glm::vec3> &
     standPosition.emplace_back(3.9f, -0.5f, 0.0f);
 
     for(auto & i : standPosition)
-        standModels.push_back(initPodiumModelMatrix(i));
-}
-
-glm::mat4 initPodiumModelMatrix(glm::vec3 stand_position){
-    glm::mat4 standModel = glm::mat4(1.0f);
-    standModel = glm::translate(standModel, stand_position);
-    standModel = glm::scale(standModel, glm::vec3(2.0f));
-    return standModel;
+        standModels.push_back(glm::translate(glm::mat4(1.0f), i));
 }
 
 void processInput(GLFWwindow *window){
