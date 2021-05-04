@@ -22,6 +22,8 @@ glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indic
 void initPodiumModelMatrices(vector<glm::mat4> &standModels, vector<glm::vec3> &standPosition);
 unsigned int loadTexture(const char *path);
 
+unsigned int loadCubemap(vector<string> &faces);
+
 unsigned selectedStand = 0;
 glm::vec3 *light_position;
 
@@ -169,9 +171,79 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
+    /* Cubebox set up */
+
+    float cubemapVertices[] = {
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+
+        -1.0f, -1.0f, 1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, -1.0f, 1.0f,
+
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f,
+        -1.0f, -1.0f, 1.0f,
+
+        -1.0f, 1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f
+    };
+
+    unsigned int cubemapVAO, cubemapVBO;
+    glGenVertexArrays(1, &cubemapVAO);
+    glGenBuffers(1, &cubemapVBO);
+    glBindVertexArray(cubemapVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, cubemapVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubemapVertices), &cubemapVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) nullptr);
+
+    vector<std::string> faces = {
+            FileSystem::getPath("resources/textures/Storforsen4/posx.jpg"),
+            FileSystem::getPath("resources/textures/Storforsen4/negx.jpg"),
+            FileSystem::getPath("resources/textures/Storforsen4/posy.jpg"),
+            FileSystem::getPath("resources/textures/Storforsen4/negy.jpg"),
+            FileSystem::getPath("resources/textures/Storforsen4/posz.jpg"),
+            FileSystem::getPath("resources/textures/Storforsen4/negz.jpg"),
+    };
+
+    Shader cubemapShader("resources/shaders/cubemap.vs", "resources/shaders/cubemap.fs");
+    cubemapShader.setInt("cubemap", 0);
+
+    unsigned int cubemapTexture = loadCubemap(faces);
+
     /* Stand set up */
     Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
     Shader selectedStandShader("resources/shaders/selected_shader.vs", "resources/shaders/selected_stand.fs");
+
 
     vector<glm::mat4> standModels;
     vector<glm::vec3> standPosition;
@@ -211,6 +283,23 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         setViewAndProjectionMatrixForAllShaders(shaders);
+
+        /* cube mapping */
+
+        glDepthMask(GL_FALSE);
+        cubemapShader.use();
+        glm::mat4 view = static_camera();
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f),
+                                                (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        cubemapShader.setMat4("view", glm::mat4(glm::mat3(view)));
+        cubemapShader.setMat4("projection", projection);
+
+        glBindVertexArray(cubemapVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDepthMask(GL_TRUE);
+
 
         /* render the loaded models */ //- can all be moved to 1 function
 
@@ -284,6 +373,33 @@ int main()
     // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
+}
+
+unsigned int loadCubemap(vector<string> &faces) {
+    unsigned int textureID;
+    glGenBuffers(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    int widht, height, nrChannels;
+    unsigned char* data;
+
+    for(int i = 0; i < (int)faces.size(); i++){
+        data = stbi_load(faces[i].c_str(), &widht, &height, &nrChannels, 0);
+        if(data){
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, widht, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        }else{
+            cout << "failed to load cubemap texture" << endl;
+            return -1;
+        }
+        stbi_image_free(data);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return textureID;
 }
 
 void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders){
