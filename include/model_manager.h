@@ -17,8 +17,6 @@ public:
     Model *model;
     glm::mat4 modelMatrix;
     glm::mat4 initialModelMatrix;
-//    glm::mat4 standMatrix;
-//    glm::vec3 standPosition;
 
     explicit MyModel(Character character)
     {
@@ -67,8 +65,8 @@ private:
     }
     void makeSakura(){
         modelMatrix = glm::mat4(1.0f);
-        modelMatrix = glm::translate(modelMatrix, glm::vec3(3.45f, -0.1f, 1.2f));
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.014f));
+        modelMatrix = glm::translate(modelMatrix, glm::vec3(3.9f, -0.4f, 0.0f));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.016f));
 
         model = new Model(FileSystem::getPath("resources/objects/s3/sakura.obj"));
     }

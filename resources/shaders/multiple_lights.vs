@@ -13,10 +13,12 @@ out vec3 viewPos;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform vec3 cameraPos;
 
 void main(){
     // Ovo ti je camera position ako ikad ne bude staticna to moras da prosledis od spolja
     viewPos = vec3(0.0f, 2.0f, 10.0f);
+    viewPos = cameraPos;
 
     TexCoords = aTexCoords;
     Normal = mat3(transpose(inverse(model))) * aNormal;

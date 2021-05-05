@@ -244,6 +244,9 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/home/ubuntu/Desktop/rg_proj/include/learnopengl/camera.h">
+			<Option target="project_base"/>
+		</Unit>
 		<Unit filename="/home/ubuntu/Desktop/rg_proj/include/model_manager.h">
 			<Option target="project_base"/>
 		</Unit>

@@ -8,6 +8,7 @@
 #include <learnopengl/filesystem.h>
 #include <learnopengl/shader_m.h>
 #include <learnopengl/model.h>
+#include <learnopengl/camera.h>
 
 #include <iostream>
 #include <model_manager.h>
@@ -21,8 +22,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indices_count);
 void initPodiumModelMatrices(vector<glm::mat4> &standModels, vector<glm::vec3> &standPosition);
 unsigned int loadTexture(const char *path);
-
 unsigned int loadCubemap(vector<string> &faces);
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 unsigned selectedStand = 0;
 glm::vec3 *light_position;
@@ -31,10 +34,11 @@ glm::vec3 *light_position;
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-//// camera
-//float lastX = SCR_WIDTH / 2.0f;
-//float lastY = SCR_HEIGHT / 2.0f;
-//bool firstMouse = true;
+// camera
+Camera camera(glm::vec3(0.0f, 2.0f, 10.0f));
+double lastX = SCR_WIDTH / 2.0f;
+double lastY = SCR_HEIGHT / 2.0f;
+bool firstMouse = true;
 
 // timing
 float deltaTime = 0.0f;
@@ -66,8 +70,11 @@ int main()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetKeyCallback(window, key_callback);
 
-//    // tell GLFW to capture our mouse - ovo ti skloni kursor sa ekrana i to retardirano
-//    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+
+    // tell GLFW to capture our mouse
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -226,13 +233,14 @@ int main()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) nullptr);
 
+    // ovo je onaj profi, nije handmade
     vector<std::string> faces = {
-            FileSystem::getPath("resources/textures/Storforsen4/posx.jpg"),
-            FileSystem::getPath("resources/textures/Storforsen4/negx.jpg"),
-            FileSystem::getPath("resources/textures/Storforsen4/posy.jpg"),
-            FileSystem::getPath("resources/textures/Storforsen4/negy.jpg"),
-            FileSystem::getPath("resources/textures/Storforsen4/posz.jpg"),
-            FileSystem::getPath("resources/textures/Storforsen4/negz.jpg"),
+            FileSystem::getPath("resources/textures/my_cubemap/right.png"),
+            FileSystem::getPath("resources/textures/my_cubemap/left.png"),
+            FileSystem::getPath("resources/textures/my_cubemap/top.png"),
+            FileSystem::getPath("resources/textures/my_cubemap/down.png"),
+            FileSystem::getPath("resources/textures/my_cubemap/front.png"),
+            FileSystem::getPath("resources/textures/my_cubemap/back.png"),
     };
 
     Shader cubemapShader("resources/shaders/cubemap.vs", "resources/shaders/cubemap.fs");
@@ -255,7 +263,7 @@ int main()
     ModelManager mm = ModelManager();
 
     /* Shaders */
-    vector<Shader*> shaders = {&groundShader, &modelShader, &selectedStandShader};
+    vector<Shader*> shaders = {&groundShader, &modelShader, &selectedStandShader, &cubemapShader};
 
     // Loading texture
     unsigned int diffuseMap = loadTexture(FileSystem::getPath("resources/textures/rocks/Rock_Mosaic_DIFF.png").c_str());
@@ -284,23 +292,6 @@ int main()
 
         setViewAndProjectionMatrixForAllShaders(shaders);
 
-        /* cube mapping */
-
-        glDepthMask(GL_FALSE);
-        cubemapShader.use();
-        glm::mat4 view = static_camera();
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f),
-                                                (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        cubemapShader.setMat4("view", glm::mat4(glm::mat3(view)));
-        cubemapShader.setMat4("projection", projection);
-
-        glBindVertexArray(cubemapVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glDepthMask(GL_TRUE);
-
-
         /* render the loaded models */ //- can all be moved to 1 function
 
         mm.setSelectedModel(static_cast<Character>(selectedStand));
@@ -310,7 +301,8 @@ int main()
 
         modelShader.use();
 
-        modelShader.setVec3("pointLight.position", light_position->x, light_position->y, light_position->z);
+        modelShader.setVec3("pointLight.position", *light_position);
+        modelShader.setVec3("cameraPos", camera.Position);
 
         modelShader.setVec3("dirLight.direction", 0.0f, -1.0f, -1.0f);
         modelShader.setVec3("dirLight.ambient", 0.1f, 0.1f, 0.1f);
@@ -340,7 +332,8 @@ int main()
 
         groundShader.use();
 
-        groundShader.setVec3("pointLight.position", light_position->x, light_position->y, light_position->z);
+        groundShader.setVec3("pointLight.position", *light_position);
+        groundShader.setVec3("cameraPos", camera.Position);
 
         groundShader.setVec3("dirLight.direction", 0.0f, -1.0f, 1.0f);
         groundShader.setVec3("dirLight.ambient", 0.1f, 0.1f, 0.1f);
@@ -362,6 +355,18 @@ int main()
             else
                 drawStand(VAO, standModels[i], groundShader, indices_count);
         }
+
+        /* cube mapping */
+
+        cubemapShader.use();
+        glDepthMask(GL_FALSE);
+        glDepthFunc(GL_LEQUAL);
+        glBindVertexArray(cubemapVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDepthMask(GL_TRUE);
+        glDepthFunc(GL_LESS);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -403,9 +408,9 @@ unsigned int loadCubemap(vector<string> &faces) {
 }
 
 void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders){
-    glm::mat4 view = static_camera();
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f),
-                                            (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    glm::mat4 view = camera.GetViewMatrix();
+
     for(Shader* shader : shaders){
         shader->use();
         shader->setMat4("projection", projection);
@@ -431,8 +436,28 @@ void initPodiumModelMatrices(vector<glm::mat4> &standModels, vector<glm::vec3> &
         standModels.push_back(glm::translate(glm::mat4(1.0f), i));
 }
 
-void processInput(GLFWwindow *window){
-    (void)window;
+void processInput(GLFWwindow *window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.ProcessKeyboard(FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.ProcessKeyboard(BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.ProcessKeyboard(LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.ProcessKeyboard(RIGHT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+        camera.ProcessMouseMovement(0.0, 10.0);
+    if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+        camera.ProcessMouseMovement(0.0, -10.0);
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        camera.ProcessMouseMovement(50.0, 0.0);
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        camera.ProcessMouseMovement(-50.0, 0.0);
+
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
@@ -446,15 +471,37 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         selectedStand++;
     if(key == GLFW_KEY_LEFT && action == GLFW_PRESS && selectedStand > 0)
         selectedStand--;
-    if(key == GLFW_KEY_E && action == GLFW_PRESS){
-        light_position->y = 100.0f;
-        cout << light_position->x << " ";
-        cout << light_position->y << " ";
-        cout << light_position->z << " ";
-        cout <<endl;
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    (void)window;
+    // Meni ovde ozbiljne nebuloze vraca sistem za x i y poziciju misa
+    // ja nmg nikako da namestim da ovo proradi
+//    cout << xpos << " " << ypos << endl;
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
     }
 
-    std::cout << selectedStand << std::endl;
+    double xoffset = xpos - lastX;
+    double yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+    lastX = xpos;
+    lastY = ypos;
+
+//    camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    (void)xoffset;
+    (void)window;
+    camera.ProcessMouseScroll(yoffset);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
