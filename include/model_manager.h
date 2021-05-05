@@ -82,22 +82,26 @@ public:
             new MyModel(NARUTO),
             new MyModel(SAKURA)
     };
-    ModelManager()= default;
+    Shader &shader;
 
-    void drawCharacter(Character modelType, Shader &shader){
-        shader.use();
-        // mozda postoji nesto bolje za konstantniju rotaciju, jer ova krece polako a ko zna kakva ce da bude posle 3 min
-        // cekam da vidim na vezbama kako ga je rotirao
-        models[selectedModel]->modelMatrix = glm::rotate(models[selectedModel]->modelMatrix,
-                                                         glm::radians(((float) glfwGetTime())/100),
-                                                         glm::vec3(0.0f, 1.0f, 0.0f));
+    explicit ModelManager(Shader &shader1) : shader(shader1) {}
+
+    void drawCharacter(Character modelType){
         shader.setMat4("model", models[modelType]->modelMatrix);
         getModel(modelType)->Draw(shader);
     }
 
-    glm::mat4 getModelMatrix(Character modelType){
-        return models[modelType]->modelMatrix;
+    void drawCharachters(float rotateVal){
+        models[selectedModel]->modelMatrix = glm::rotate(models[selectedModel]->modelMatrix,
+                                                         glm::radians(rotateVal),
+                                                         glm::vec3(0.0f, 1.0f, 0.0f));
+        shader.use();
+        drawCharacter(KAKASHI);
+        drawCharacter(SASUKE);
+        drawCharacter(NARUTO);
+        drawCharacter(SAKURA);
     }
+
     Model* getModel(Character modelType){
         return models[modelType]->model;
     }

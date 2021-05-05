@@ -162,7 +162,7 @@ int main()
     /*Model set up*/
     Shader modelShader("resources/shaders/multiple_lights.vs", "resources/shaders/multiple_lights.fs");
 
-    ModelManager mm = ModelManager();
+    ModelManager mm = ModelManager(modelShader);
 
     /* Shaders */
     vector<Shader*> shaders = {&groundShader, &modelShader, &selectedStandShader, &cubemapShader};
@@ -220,10 +220,7 @@ int main()
         modelShader.setFloat("pointLight.quadratic", 0.032f);
 
         // Draw characters
-        mm.drawCharacter(KAKASHI, modelShader);
-        mm.drawCharacter(SASUKE, modelShader);
-        mm.drawCharacter(NARUTO, modelShader);
-        mm.drawCharacter(SAKURA, modelShader);
+        mm.drawCharachters(deltaTime*100);
 
         // Postavimo teksturu i proprties za groundShader
 
