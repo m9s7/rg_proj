@@ -16,7 +16,10 @@
 float* initStandVertices(unsigned &size);
 float* initCubemapVertices(unsigned &size);
 unsigned int loadTexture(const char *path);
-unsigned int loadCubemapTexture(vector<string> &faces);
+unsigned int loadCubemapTexture();
+
+void setModelShaderUniforms(Shader &shader);
+void setStandShaderUniforms(Shader &shader);
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -48,8 +51,7 @@ glm::vec3 *light_position;
 
 int main()
 {
-    // glfw: initialize and configure
-    // ------------------------------
+    /* INIT GLFW, MAKE A WINDOW AND SET CALLBACK FUNCTIONS */
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -59,8 +61,6 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    // glfw window creation
-    // --------------------
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Team 7 Wax Figurines", nullptr, nullptr);
     if (window == nullptr)
     {
@@ -78,50 +78,51 @@ int main()
     // tell GLFW to capture our mouse
 //    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    // glad: load all OpenGL function pointers
-    // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
 
-    // configure global opengl state
-    // -----------------------------
+    /* ENABLE FACE CULLING */
     glEnable(GL_DEPTH_TEST);
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK); // govori koji face se odseca
     glFrontFace(GL_CCW); // govori sta je front face
 
-    /* DRAWING OBJECT WITH EBO */
+    /* MAKE STAND EBO */
     unsigned sizeof_standVertices;
     float* standVertices = initStandVertices(sizeof_standVertices);
 
     int indices_count = 36;
     unsigned int VBO, VAO;
-
     glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-
     glGenBuffers(1, &VBO);
-
+    glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof_standVertices, standVertices, GL_STATIC_DRAW);
-
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)nullptr);
     glEnableVertexAttribArray(0);
-
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
-
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(6*sizeof(float)));
     glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    /* Cubebox set up */
+    Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
+    Shader selectedStandShader("resources/shaders/selected_shader.vs", "resources/shaders/selected_stand.fs");
+
+    unsigned int diffuseMap = loadTexture(FileSystem::getPath("resources/textures/rocks/Rock_Mosaic_DIFF.png").c_str());
+    unsigned int specularMap = loadTexture(FileSystem::getPath("resources/textures/rocks/Rock_Mosaic_SPEC.png").c_str());
+
+    groundShader.use();
+    groundShader.setInt("material.diffuse", 0);
+    groundShader.setInt("material.specular", 1);
+
+    /* MAKE CUBEBOX EBO */
 
     unsigned sizeof_cubemapVertices;
     float* cubemapVertices = initCubemapVertices(sizeof_cubemapVertices);
@@ -132,54 +133,27 @@ int main()
     glBindVertexArray(cubemapVAO);
     glBindBuffer(GL_ARRAY_BUFFER, cubemapVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof_cubemapVertices, cubemapVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) nullptr);
-
-    // ovo je onaj profi, nije handmade
-    vector<std::string> faces = {
-            FileSystem::getPath("resources/textures/my_cubemap/right.png"),
-            FileSystem::getPath("resources/textures/my_cubemap/left.png"),
-            FileSystem::getPath("resources/textures/my_cubemap/top.png"),
-            FileSystem::getPath("resources/textures/my_cubemap/down.png"),
-            FileSystem::getPath("resources/textures/my_cubemap/front.png"),
-            FileSystem::getPath("resources/textures/my_cubemap/back.png"),
-    };
+    glEnableVertexAttribArray(0);
 
     Shader cubemapShader("resources/shaders/cubemap.vs", "resources/shaders/cubemap.fs");
     cubemapShader.setInt("cubemap", 0);
 
-    unsigned int cubemapTexture = loadCubemapTexture(faces);
-
-    /* Stand set up */
-    Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
-    Shader selectedStandShader("resources/shaders/selected_shader.vs", "resources/shaders/selected_stand.fs");
-
+    unsigned int cubemapTexture = loadCubemapTexture();
 
     vector<glm::mat4> standModels;
     vector<glm::vec3> standPosition;
     initPodiumModelMatrices(standModels, standPosition);
 
-    /*Model set up*/
+    /* MAKING MODELS */
     Shader modelShader("resources/shaders/multiple_lights.vs", "resources/shaders/multiple_lights.fs");
-
     ModelManager mm = ModelManager(modelShader);
-
-    /* Shaders */
-    vector<Shader*> shaders = {&groundShader, &modelShader, &selectedStandShader, &cubemapShader};
-
-    // Loading texture
-    unsigned int diffuseMap = loadTexture(FileSystem::getPath("resources/textures/rocks/Rock_Mosaic_DIFF.png").c_str());
-    unsigned int specularMap = loadTexture(FileSystem::getPath("resources/textures/rocks/Rock_Mosaic_SPEC.png").c_str());
-
-    groundShader.use();
-    groundShader.setInt("material.diffuse", 0);
-    groundShader.setInt("material.specular", 1);
 
     // draw in wireframe
 //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    // render loop
-    // -----------
+    /* RENDER LOOP */
+    vector<Shader*> shaders = {&groundShader, &modelShader, &selectedStandShader, &cubemapShader};
     while (!glfwWindowShouldClose(window))
     {
         /* initial set up */
@@ -187,65 +161,28 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        /* process input */
         processInput(window);
+        mm.setSelectedModel(static_cast<Character>(selectedStand));
+        light_position = &standPosition[selectedStand];
 
         glClearColor(0.05f, 0.05f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         setViewAndProjectionMatrixForAllShaders(shaders);
 
-        /* render the loaded models */ //- can all be moved to 1 function
-
-        mm.setSelectedModel(static_cast<Character>(selectedStand));
-
-        // Set light position
-        light_position = &standPosition[selectedStand];
-
-        modelShader.use();
-
-        modelShader.setVec3("pointLight.position", *light_position);
-        modelShader.setVec3("cameraPos", camera.Position);
-
-        modelShader.setVec3("dirLight.direction", 0.0f, -1.0f, -1.0f);
-        modelShader.setVec3("dirLight.ambient", 0.1f, 0.1f, 0.1f);
-        modelShader.setVec3("dirLight.diffuse", 0.5f, 0.5f, 0.5f);
-        modelShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
-
-        modelShader.setVec3("pointLight.ambient", 0.2f, 0.2f, 0.2f);
-        modelShader.setVec3("pointLight.diffuse", 1.0f, 1.0f, 1.0f);
-        modelShader.setVec3("pointLight.specular", 1.0f, 1.0f, 1.0f);
-
-        modelShader.setFloat("pointLight.constant", 0.5f);
-        modelShader.setFloat("pointLight.linear", 0.09f);
-        modelShader.setFloat("pointLight.quadratic", 0.032f);
-
-        // Draw characters
+        /* draw models */
+        setModelShaderUniforms(modelShader);
         mm.drawCharachters(deltaTime*100);
 
-        // Postavimo teksturu i proprties za groundShader
+        /* draw stands */
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuseMap);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, specularMap);
 
-        groundShader.use();
-
-        groundShader.setVec3("pointLight.position", *light_position);
-        groundShader.setVec3("cameraPos", camera.Position);
-
-        groundShader.setVec3("dirLight.direction", 0.0f, -1.0f, 1.0f);
-        groundShader.setVec3("dirLight.ambient", 0.1f, 0.1f, 0.1f);
-        groundShader.setVec3("dirLight.diffuse", 0.5f, 0.5f, 0.5f);
-        groundShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
-
-        groundShader.setVec3("pointLight.ambient", 0.2f, 0.2f, 0.2f);
-        groundShader.setVec3("pointLight.diffuse", 1.0f, 1.0f, 1.0f);
-        groundShader.setVec3("pointLight.specular", 1.0f, 1.0f, 1.0f);
-
-        groundShader.setFloat("pointLight.constant", 0.5f);
-        groundShader.setFloat("pointLight.linear", 0.09f);
-        groundShader.setFloat("pointLight.quadratic", 0.032f);
+        setStandShaderUniforms(groundShader);
 
         /* Draw stands */
         for(unsigned i = 0; i < standModels.size(); i++) {
@@ -282,7 +219,9 @@ int main()
 }
 
 void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders){
-    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom),
+                                            (float)SCR_WIDTH / (float)SCR_HEIGHT,
+                                            0.1f, 100.0f);
     glm::mat4 view = camera.GetViewMatrix();
 
     for(Shader* shader : shaders){
@@ -395,7 +334,17 @@ unsigned int loadTexture(const char *path){
     return textureID;
 }
 
-unsigned int loadCubemapTexture(vector<string> &faces) {
+unsigned int loadCubemapTexture() {
+
+    vector<std::string> faces = {
+            FileSystem::getPath("resources/textures/my_cubemap/right.png"),
+            FileSystem::getPath("resources/textures/my_cubemap/left.png"),
+            FileSystem::getPath("resources/textures/my_cubemap/top.png"),
+            FileSystem::getPath("resources/textures/my_cubemap/down.png"),
+            FileSystem::getPath("resources/textures/my_cubemap/front.png"),
+            FileSystem::getPath("resources/textures/my_cubemap/back.png"),
+    };
+
     unsigned int textureID;
     glGenBuffers(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
@@ -561,4 +510,44 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 
 //    camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+void setModelShaderUniforms(Shader &shader){
+    shader.use();
+
+    shader.setVec3("pointLight.position", *light_position);
+    shader.setVec3("cameraPos", camera.Position);
+
+    shader.setVec3("dirLight.direction", 0.0f, -1.0f, -1.0f);
+    shader.setVec3("dirLight.ambient", 0.1f, 0.1f, 0.1f);
+    shader.setVec3("dirLight.diffuse", 0.5f, 0.5f, 0.5f);
+    shader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+
+    shader.setVec3("pointLight.ambient", 0.2f, 0.2f, 0.2f);
+    shader.setVec3("pointLight.diffuse", 1.0f, 1.0f, 1.0f);
+    shader.setVec3("pointLight.specular", 1.0f, 1.0f, 1.0f);
+
+    shader.setFloat("pointLight.constant", 0.5f);
+    shader.setFloat("pointLight.linear", 0.09f);
+    shader.setFloat("pointLight.quadratic", 0.032f);
+}
+
+void setStandShaderUniforms(Shader &shader){
+    shader.use();
+
+    shader.setVec3("pointLight.position", *light_position);
+    shader.setVec3("cameraPos", camera.Position);
+
+    shader.setVec3("dirLight.direction", 0.0f, -1.0f, 1.0f);
+    shader.setVec3("dirLight.ambient", 0.1f, 0.1f, 0.1f);
+    shader.setVec3("dirLight.diffuse", 0.5f, 0.5f, 0.5f);
+    shader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+
+    shader.setVec3("pointLight.ambient", 0.2f, 0.2f, 0.2f);
+    shader.setVec3("pointLight.diffuse", 1.0f, 1.0f, 1.0f);
+    shader.setVec3("pointLight.specular", 1.0f, 1.0f, 1.0f);
+
+    shader.setFloat("pointLight.constant", 0.5f);
+    shader.setFloat("pointLight.linear", 0.09f);
+    shader.setFloat("pointLight.quadratic", 0.032f);
 }
