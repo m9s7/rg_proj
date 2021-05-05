@@ -15,6 +15,8 @@
 
 float* initStandVertices(unsigned &size);
 float* initCubemapVertices(unsigned &size);
+unsigned int loadTexture(const char *path);
+unsigned int loadCubemapTexture(vector<string> &faces);
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -22,14 +24,10 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void processInput(GLFWwindow *window);
 
-glm::mat4 static_camera();
 void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders);
 
 void initPodiumModelMatrices(vector<glm::mat4> &standModels, vector<glm::vec3> &standPosition);
 glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indices_count);
-
-unsigned int loadTexture(const char *path);
-unsigned int loadCubemap(vector<string> &faces);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -88,9 +86,6 @@ int main()
         return -1;
     }
 
-    // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
-//    stbi_set_flip_vertically_on_load(true);
-
     // configure global opengl state
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
@@ -98,13 +93,10 @@ int main()
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK); // govori koji face se odseca
     glFrontFace(GL_CCW); // govori sta je front face
-    // CW = BACKFACE
-    // CCW = FRONTFACE
-
 
     /* DRAWING OBJECT WITH EBO */
-    unsigned sizeof_stand_vertices;
-    float* stand_vertices = initStandVertices(sizeof_stand_vertices);
+    unsigned sizeof_standVertices;
+    float* standVertices = initStandVertices(sizeof_standVertices);
 
     int indices_count = 36;
     unsigned int VBO, VAO;
@@ -115,7 +107,7 @@ int main()
     glGenBuffers(1, &VBO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof_stand_vertices, stand_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof_standVertices, standVertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)nullptr);
     glEnableVertexAttribArray(0);
@@ -131,56 +123,15 @@ int main()
 
     /* Cubebox set up */
 
-    float cubemapVertices[] = {
-        -1.0f, 1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, 1.0f, -1.0f,
-        -1.0f, 1.0f, -1.0f,
-
-        -1.0f, -1.0f, 1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, 1.0f, -1.0f,
-        -1.0f, 1.0f, -1.0f,
-        -1.0f, 1.0f, 1.0f,
-        -1.0f, -1.0f, 1.0f,
-
-        1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-
-        -1.0f, -1.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f,
-        -1.0f, -1.0f, 1.0f,
-
-        -1.0f, 1.0f, -1.0f,
-        1.0f, 1.0f, -1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, -1.0f,
-
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f
-    };
+    unsigned sizeof_cubemapVertices;
+    float* cubemapVertices = initCubemapVertices(sizeof_cubemapVertices);
 
     unsigned int cubemapVAO, cubemapVBO;
     glGenVertexArrays(1, &cubemapVAO);
     glGenBuffers(1, &cubemapVBO);
     glBindVertexArray(cubemapVAO);
     glBindBuffer(GL_ARRAY_BUFFER, cubemapVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cubemapVertices), &cubemapVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof_cubemapVertices, cubemapVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) nullptr);
 
@@ -197,7 +148,7 @@ int main()
     Shader cubemapShader("resources/shaders/cubemap.vs", "resources/shaders/cubemap.fs");
     cubemapShader.setInt("cubemap", 0);
 
-    unsigned int cubemapTexture = loadCubemap(faces);
+    unsigned int cubemapTexture = loadCubemapTexture(faces);
 
     /* Stand set up */
     Shader groundShader("resources/shaders/ground_shader.vs", "resources/shaders/ground_shader.fs");
@@ -328,35 +279,9 @@ int main()
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
     glfwTerminate();
-    delete stand_vertices;
+    delete standVertices;
+    delete cubemapVertices;
     return 0;
-}
-
-unsigned int loadCubemap(vector<string> &faces) {
-    unsigned int textureID;
-    glGenBuffers(1, &textureID);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-
-    int widht, height, nrChannels;
-    unsigned char* data;
-
-    for(int i = 0; i < (int)faces.size(); i++){
-        data = stbi_load(faces[i].c_str(), &widht, &height, &nrChannels, 0);
-        if(data){
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, widht, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        }else{
-            cout << "failed to load cubemap texture" << endl;
-            return -1;
-        }
-        stbi_image_free(data);
-    }
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-    return textureID;
 }
 
 void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders){
@@ -390,9 +315,6 @@ void initPodiumModelMatrices(vector<glm::mat4> &standModels, vector<glm::vec3> &
 
 void processInput(GLFWwindow *window)
 {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.ProcessKeyboard(FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -425,30 +347,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         selectedStand--;
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
-    (void)window;
-    // Meni ovde ozbiljne nebuloze vraca sistem za x i y poziciju misa
-    // ja nmg nikako da namestim da ovo proradi
-//    cout << xpos << " " << ypos << endl;
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    double xoffset = xpos - lastX;
-    double yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-    lastX = xpos;
-    lastY = ypos;
-
-//    camera.ProcessMouseMovement(xoffset, yoffset);
-}
-
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     (void)xoffset;
@@ -460,15 +358,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     (void)window;
     glViewport(0, 0, width, height);
-}
-
-glm::mat4 static_camera(){
-    glm::vec3 Position = glm::vec3(0.0f, 2.0f, 10.0f);
-    glm::vec3 WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 Front = glm::vec3(0.0f, 0.0f, -1.0f);
-    glm::vec3 Right = glm::normalize(glm::cross(Front, WorldUp));
-    glm::vec3 Up = glm::normalize(glm::cross(Right, Front));
-    return glm::lookAt(Position, Position + Front, Up);
 }
 
 unsigned int loadTexture(const char *path){
@@ -506,6 +395,33 @@ unsigned int loadTexture(const char *path){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     stbi_image_free(data);
+    return textureID;
+}
+
+unsigned int loadCubemapTexture(vector<string> &faces) {
+    unsigned int textureID;
+    glGenBuffers(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    int widht, height, nrChannels;
+    unsigned char* data;
+
+    for(int i = 0; i < (int)faces.size(); i++){
+        data = stbi_load(faces[i].c_str(), &widht, &height, &nrChannels, 0);
+        if(data){
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, widht, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        }else{
+            cout << "failed to load cubemap texture" << endl;
+            return -1;
+        }
+        stbi_image_free(data);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
     return textureID;
 }
 
@@ -625,4 +541,27 @@ float* initCubemapVertices(unsigned &size){
     };
 
     return vertices;
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    (void)window;
+    // Meni ovde ozbiljne nebuloze vraca sistem za x i y poziciju misa
+    // ja nmg nikako da namestim da ovo proradi
+//    cout << xpos << " " << ypos << endl;
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+//    double xoffset = xpos - lastX;
+//    double yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+    lastX = xpos;
+    lastY = ypos;
+
+
+//    camera.ProcessMouseMovement(xoffset, yoffset);
 }
