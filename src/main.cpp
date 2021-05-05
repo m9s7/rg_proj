@@ -3,7 +3,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-//#include <glm/gtc/type_ptr.hpp>
 
 #include <learnopengl/filesystem.h>
 #include <learnopengl/shader_m.h>
@@ -22,7 +21,6 @@ void setModelShaderUniforms(Shader &shader);
 void setStandShaderUniforms(Shader &shader);
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void processInput(GLFWwindow *window);
@@ -32,15 +30,17 @@ void setViewAndProjectionMatrixForAllShaders(vector<Shader*> &shaders);
 void initPodiumModelMatrices(vector<glm::mat4> &standModels, vector<glm::vec3> &standPosition);
 glm::mat4 drawStand(unsigned int VAO, glm::mat4 &model, Shader shader, int indices_count);
 
+//void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+//bool firstMouse = true;
+//double lastX = SCR_WIDTH / 2.0f;
+//double lastY = SCR_HEIGHT / 2.0f;
+
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // camera
 Camera camera(glm::vec3(0.0f, 2.0f, 10.0f));
-double lastX = SCR_WIDTH / 2.0f;
-double lastY = SCR_HEIGHT / 2.0f;
-bool firstMouse = true;
 
 // timing
 float deltaTime = 0.0f;
@@ -72,7 +72,7 @@ int main()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetKeyCallback(window, key_callback);
 
-    glfwSetCursorPosCallback(window, mouse_callback);
+//    glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
 
     // tell GLFW to capture our mouse
@@ -260,9 +260,9 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.ProcessKeyboard(RIGHT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
-        camera.ProcessMouseMovement(0.0, 10.0);
+        camera.ProcessMouseMovement(0.0, 50.0);
     if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
-        camera.ProcessMouseMovement(0.0, -10.0);
+        camera.ProcessMouseMovement(0.0, -50.0);
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
         camera.ProcessMouseMovement(50.0, 0.0);
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
@@ -489,28 +489,30 @@ float* initCubemapVertices(unsigned &size){
     return vertices;
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
-    (void)window;
-    // Meni ovde ozbiljne nebuloze vraca sistem za x i y poziciju misa
-    // ja nmg nikako da namestim da ovo proradi
-//    cout << xpos << " " << ypos << endl;
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
+//void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+//{
+//    (void)window;
 
+//    // Meni ovde ozbiljne nebuloze vraca sistem za x i y poziciju misa
+//    // ja nmg nikako da namestim da ovo proradi
+//    // cout << xpos << " " << ypos << endl;
+
+//    if (firstMouse)
+//    {
+//        lastX = xpos;
+//        lastY = ypos;
+//        firstMouse = false;
+//    }
+//
 //    double xoffset = xpos - lastX;
 //    double yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-    lastX = xpos;
-    lastY = ypos;
-
-
+//
+//    lastX = xpos;
+//    lastY = ypos;
+//
+//
 //    camera.ProcessMouseMovement(xoffset, yoffset);
-}
+//}
 
 void setModelShaderUniforms(Shader &shader){
     shader.use();
