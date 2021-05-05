@@ -1,7 +1,7 @@
 # 3ds Max Wavefront OBJ Exporter v0.94b - (c)2007 guruware
-# File Created: 02.11.2008 18:38:05
+# File Created: 03.10.2017 14:12:43
 
-newmtl 94e4e7d1_dds
+newmtl 01___Default
 	Ns 10.0000
 	Ni 1.5000
 	d 1.0000
@@ -9,13 +9,13 @@ newmtl 94e4e7d1_dds
 	Tf 1.0000 1.0000 1.0000 
 	illum 2
 	Ka 0.0000 0.0000 0.0000
-	Kd 0.7000 0.7000 0.7000
-	Ks 0.1000 0.1000 0.1000
-	Ke 0.7000 0.7000 0.7000
-	map_Ka 7b60b497.png
-	map_Kd 7b60b497.png
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka ntxr000.jpg
+	map_Kd ntxr000.jpg
 
-newmtl b69344ae_dds
+newmtl 02___Default
 	Ns 10.0000
 	Ni 1.5000
 	d 1.0000
@@ -23,22 +23,8 @@ newmtl b69344ae_dds
 	Tf 1.0000 1.0000 1.0000 
 	illum 2
 	Ka 0.0000 0.0000 0.0000
-	Kd 0.7000 0.7000 0.7000
-	Ks 0.1000 0.1000 0.1000
-	Ke 0.7000 0.7000 0.7000
-	map_Ka e8ffe819.png
-	map_Kd e8ffe819.png
-
-newmtl cf294436_dds
-	Ns 10.0000
-	Ni 1.5000
-	d 1.0000
-	Tr 1.0000
-	Tf 1.0000 1.0000 1.0000 
-	illum 2
-	Ka 0.0000 0.0000 0.0000
-	Kd 0.7000 0.7000 0.7000
-	Ks 0.1000 0.1000 0.1000
-	Ke 0.7000 0.7000 0.7000
-	map_Ka cf294436.png
-	map_Kd cf294436.png
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka ntxr004.jpg
+	map_Kd ntxr004.jpg

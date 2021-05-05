@@ -52,7 +52,7 @@ private:
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f));
     }
     void makeSakura(){
-        model = new Model(FileSystem::getPath("resources/objects/s3/sakura.obj"));
+        model = new Model(FileSystem::getPath("resources/objects/sakura/sakura.obj"));
         modelMatrix = glm::translate(modelMatrix, glm::vec3(3.9f, -0.4f, 0.0f));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.016f));
     }
